@@ -1,8 +1,7 @@
-# generates the data for simulated instances
+# Generate the data for simulated instances / EI datasets.
 source("src/R_functions.R")
-# setwd("~/MIT Dropbox/Charles Thraves/Research/SERVEL/Mesas Outlier 2/Paper/JRSS/code")
 
-# function that runs simulated instances obtaining estimated parameters and time
+# Runs the simulated instances grid and stores estimated parameters and timing.
 fun_run_simulated_instances <- function() {
     run_simulated_instances(
         # method_arr = c("mcmc","mvn_cdf","mvn_pdf","mult", "exact", "nslphom_dual_w", "lphom", "lclphom"),
@@ -37,8 +36,7 @@ fun_run_simulated_instances <- function() {
     )
 }
 
-# fun_run_simulated_instances()
-
+# Convenience runner for a smaller simulated grid when testing.
 test_fun_run_simulated_instances <- function() {
     run_simulated_instances(
         # method_arr = c("mcmc","mvn_cdf","mvn_pdf","mult", "exact", "nslphom_dual_w", "lphom", "lclphom"),
@@ -60,16 +58,17 @@ test_fun_run_simulated_instances <- function() {
 }
 
 
+# Runs EI datasets (real data) with an optional symmetry flag.
 fun_run_eidatasets_instances <- function(symmetric = FALSE) {
     run_eidatasets_instances(
         method_arr = c(
             # "mcmc",
-            # "mvn_cdf"
+            "mvn_cdf"
             # "nslphom_dual_a",
             # "ei.MD.bayes"
             # "nslphom_joint"
             # "ecolRxC"
-            "mvn_pdf"
+            # "mvn_pdf"
             # "mult"
             # "nslphom_dual_w",
             # "lphom",
@@ -98,6 +97,7 @@ fun_run_eidatasets_instances <- function(symmetric = FALSE) {
     )
 }
 
+# Narrow test runner for EI datasets.
 test_fun_run_eidatasets_instances <- function() {
     run_eidatasets_instances(
         method_arr = c( # "mcmc",
@@ -125,15 +125,5 @@ test_fun_run_eidatasets_instances <- function() {
     )
 }
 
-# run
-# test_fun_run_eidatasets_instances()
-
-
-# fun_run_eidatasets_instances()
+# Default run executed when sourcing this file
 fun_run_eidatasets_instances(symmetric = TRUE)
-
-# fun_run_simulated_instances()
-
-
-# cd "/Users/charlesthraves/MIT Dropbox/Charles Thraves/Research/SERVEL/Mesas Outlier 2/Paper/JRSS/code/"
-# Rscript src/run_simulated_instances.R

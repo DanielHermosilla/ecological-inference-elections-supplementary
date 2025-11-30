@@ -1,3 +1,4 @@
+# Build MAE_p2 error boxplots for simulated instances.
 suppressPackageStartupMessages({
     library(jsonlite)
     library(dplyr)
@@ -6,9 +7,10 @@ suppressPackageStartupMessages({
     library(forcats)
     library(ggplot2)
 })
-source("src/utilities.R")
+source("src/R_functions.R")
 
 # ------------------ PLOT ------------------
+# Boxplot of MAE_p2 across methods, faceting by groups and candidates.
 plot_EM_error_boxplot_R <- function(
     df,
     save_dir = "figures",
@@ -174,6 +176,7 @@ plot_EM_error_boxplot_R <- function(
     invisible(list(data = d, plot = p))
 }
 
+# Coerce lists/arrays to a numeric matrix for metric computation.
 as_numeric_matrix <- function(x) {
     if (is.null(x)) return(NULL)
     if (is.array(x) || is.matrix(x)) {
@@ -187,6 +190,7 @@ as_numeric_matrix <- function(x) {
     as.matrix(as.data.frame(x))
 }
 
+# Compute MAE_p2 from raw JSON entry (fallback when field missing).
 compute_mae_p2 <- function(entry) {
     js <- entry$json
     p_true <- as_numeric_matrix(js$p_true)

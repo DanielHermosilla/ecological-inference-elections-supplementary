@@ -1,4 +1,5 @@
 #!/usr/bin/env Rscript
+# Builds pairwise win/tie pie charts comparing EI methods across instances.
 
 suppressPackageStartupMessages({
     library(dplyr)
@@ -38,6 +39,7 @@ inst_like <- get_flag("inst-like", "ei_")
 limit_inst <- suppressWarnings(as.integer(get_flag("limit-inst", NA_integer_)))
 workers_arg <- suppressWarnings(as.integer(get_flag("workers", NA_integer_)))
 higher_better <- get_flag_lgl("higher-better", FALSE) # default: lower is better
+use_parallel <- get_flag_lgl("parallel", FALSE)
 
 # ================= Paths =================
 base_ei <- file.path("output", "ei_instances")
@@ -77,6 +79,7 @@ col_methods <- methods[!methods %in% row_methods]
 all_needed_methods <- sort(unique(c(row_methods, col_methods)))
 
 # ================= JSON reading + cache =================
+# Read one numeric field from a JSON result file, safely returning NA on error.
 read_field_from_json <- function(f, field) {
     tryCatch(
         {
@@ -89,6 +92,7 @@ read_field_from_json <- function(f, field) {
 }
 
 cache_env <- new.env(parent = emptyenv())
+# Cache JSON reads to avoid repeated disk I/O across workers.
 get_cached_field <- function(f, field) {
     fi <- suppressWarnings(file.info(f))
     key <- paste0(f, "||", fi$mtime, "||", field)
@@ -102,6 +106,7 @@ get_cached_field <- function(f, field) {
 }
 
 # District-level means per (inst, method, district)
+# Average a JSON field across all files for one (instance, method, district).
 by_district_for <- function(inst, method, field) {
     base_inst <- file.path(base_ei, inst)
     districts <- sort(list.dirs(base_inst, recursive = FALSE, full.names = FALSE))
@@ -127,26 +132,41 @@ by_district_for <- function(inst, method, field) {
 # ================= Parallel collect (inst × method) =================
 grid <- expand.grid(inst = instances, method = all_needed_methods, stringsAsFactors = FALSE)
 
-n_cores <- if (is.finite(workers_arg) && workers_arg > 0) workers_arg else max(1L, parallel::detectCores(logical = TRUE) - 1L)
-cl <- parallel::makeCluster(n_cores)
-on.exit(try(parallel::stopCluster(cl), silent = TRUE), add = TRUE)
-doParallel::registerDoParallel(cl)
-parallel::clusterExport(cl,
-    varlist = c(
-        "base_ei", "instances", "all_needed_methods", "field_to_use", "cache_env",
-        "read_field_from_json", "get_cached_field", "by_district_for"
-    ),
-    envir = environment()
-)
-parallel::clusterEvalQ(cl, {
-    library(dplyr)
-    library(tibble)
-    NULL
-})
+n_cores <- 1L
+district_means_list <- NULL
 
-district_means_list <- foreach(i = seq_len(nrow(grid)), .packages = c("dplyr", "tibble")) %dopar% {
-    by_district_for(grid$inst[i], grid$method[i], field_to_use)
+if (use_parallel) {
+    n_cores <- if (is.finite(workers_arg) && workers_arg > 0) {
+        workers_arg
+    } else {
+        max(1L, parallel::detectCores(logical = TRUE) - 1L)
+    }
+    cl <- parallel::makeCluster(n_cores)
+    on.exit(try(parallel::stopCluster(cl), silent = TRUE), add = TRUE)
+    doParallel::registerDoParallel(cl)
+    parallel::clusterExport(cl,
+        varlist = c(
+            "base_ei", "instances", "all_needed_methods", "field_to_use", "cache_env",
+            "read_field_from_json", "get_cached_field", "by_district_for"
+        ),
+        envir = environment()
+    )
+    parallel::clusterEvalQ(cl, {
+        library(dplyr)
+        library(tibble)
+        NULL
+    })
+
+    district_means_list <- foreach(i = seq_len(nrow(grid)), .packages = c("dplyr", "tibble")) %dopar% {
+        by_district_for(grid$inst[i], grid$method[i], field_to_use)
+    }
+} else {
+    message("Running sequentially; use --parallel=true to enable parallel workers.")
+    district_means_list <- lapply(seq_len(nrow(grid)), function(i) {
+        by_district_for(grid$inst[i], grid$method[i], field_to_use)
+    })
 }
+
 district_means <- bind_rows(district_means_list)
 
 # ================= Wide panel (inst × district) =================

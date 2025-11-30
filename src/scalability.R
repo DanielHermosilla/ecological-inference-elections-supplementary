@@ -1,3 +1,4 @@
+# Benchmarks runtime feasibility over large ballot/voter combinations.
 # ---- Paquetes ----
 library(fastei)
 library(lphom)
@@ -9,14 +10,14 @@ library(R.utils) # for withTimeout
 library(future.apply) # for future_lapply
 
 args <- commandArgs(trailingOnly = TRUE)
-run_sequential <- any(args %in% c("--sequential", "--seq", "-s"))
+run_parallel <- any(args %in% c("--parallel", "--par", "-p"))
 
-if (run_sequential) {
-    plan(sequential)
-    message("Running sequentially (override with --parallel).")
+if (run_parallel) {
+    future::plan(future::multisession, workers = max(1, parallel::detectCores() - 1))
+    message("Running in parallel (omit --parallel to stay sequential).")
 } else {
-    plan(multisession, workers = max(1, parallel::detectCores() - 1))
-    message("Running in parallel (use --sequential to disable).")
+    future::plan(future::sequential)
+    message("Running sequentially; enable workers with --parallel.")
 }
 
 # ballot_sizes <- c(1000, 5000, 10000)
@@ -32,6 +33,7 @@ grid <- expand.grid(
     stringsAsFactors = FALSE
 )
 
+# Wrap expression with timeout handling.
 safe_timeout <- function(expr, limit) {
     tryCatch(
         R.utils::withTimeout(expr, timeout = limit, onTimeout = "silent"),
@@ -46,6 +48,7 @@ safe_timeout <- function(expr, limit) {
     )
 }
 
+# Catch and log non-timeout errors without stopping the benchmark.
 safe_run <- function(expr) {
     tryCatch(expr, error = function(e) {
         message("Error interno: ", conditionMessage(e))
@@ -54,6 +57,7 @@ safe_run <- function(expr) {
 }
 
 # Runs one combinations of (ballots, voters), so it can be parallelized
+# Runs one (ballots, voters) combination; intended for parallel map.
 run_one <- function(ballots, voters, TIME_LIMIT) {
     suppressPackageStartupMessages({
         library(fastei)

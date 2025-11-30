@@ -1,4 +1,5 @@
 #!/usr/bin/env Rscript
+# Aggregates EI instance metrics into a LaTeX-ready table.
 
 suppressPackageStartupMessages({
     library(stringr)
@@ -20,6 +21,17 @@ parse_opt_int <- function(pos, default = NA_integer_) {
 parse_opt_chr <- function(pos, default = NULL) {
     if (length(args) >= pos) args[pos] else default
 }
+parse_flag_lgl <- function(flag, default = FALSE) {
+    m <- grep(flag, args, value = TRUE)
+    if (!length(m)) {
+        return(default)
+    }
+    val <- tolower(sub(paste0("^", flag, "=*"), "", m[1]))
+    if (identical(val, flag) || val == "") {
+        return(TRUE)
+    }
+    val %in% c("1", "true", "t", "yes", "y")
+}
 
 # Usage (positional):
 #   Rscript src/table.R <field_to_average> [outfile.tex] [workers] [--inst-like=ei_] [--limit-inst=9999]
@@ -37,6 +49,7 @@ field_to_average <- {
 
 outfile <- if (!is.na(tmp <- parse_opt_chr(2))) tmp else NULL
 req_workers <- parse_opt_int(3, NA_integer_)
+use_parallel <- parse_flag_lgl("--parallel", FALSE)
 
 inst_like <- {
     m <- grep("^--inst-like=", args, value = TRUE)
@@ -99,17 +112,23 @@ if (is.finite(limit_inst) && limit_inst > 0) {
 # =========================================
 # Parallelization
 # =========================================
-if (is.finite(req_workers) && req_workers > 0) {
-    plan(multisession, workers = req_workers)
+if (use_parallel) {
+    if (is.finite(req_workers) && req_workers > 0) {
+        future::plan(future::multisession, workers = req_workers)
+    } else {
+        future::plan(future::multisession, workers = future::availableCores())
+    }
+    message("Running with parallel workers; disable via --parallel=false.")
 } else {
-    plan(multisession, workers = future::availableCores())
+    future::plan(future::sequential)
+    message("Running sequentially; enable via --parallel=true.")
 }
 
 # =========================================
 # Generic JSON field reader + cache
 # =========================================
+# Reads JSON and returns the specified field as numeric or NA.
 read_field_from_json <- function(f, field) {
-    # Reads JSON and returns the specified field as numeric or NA
     tryCatch(
         {
             js <- jsonlite::fromJSON(f, simplifyVector = TRUE)
@@ -136,7 +155,7 @@ get_cached_field <- function(f, field) {
 # =========================================
 # Helpers
 # =========================================
-# Average by district (for xlsx sheets)
+# Average metric by district for one instance/method.
 by_district_for <- function(inst, method, field) {
     base_inst <- file.path(base_ei, inst)
     districts <- sort(list.dirs(base_inst, recursive = FALSE, full.names = FALSE))

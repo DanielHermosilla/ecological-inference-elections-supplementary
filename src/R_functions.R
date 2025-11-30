@@ -1,4 +1,5 @@
-cat("\014") # limpia consola
+# Core utilities for generating instances, running EI methods, and summarising results.
+cat("\014") # clear console
 
 # ======== Paquetes ========
 suppressPackageStartupMessages({
@@ -20,7 +21,7 @@ PATH_EI_INSTANCES <- file.path("output", "ei_instances")
 
 # ======== Utils ========
 
-# crea carpeta si no existe
+# Create folder recursively when missing (no-op otherwise).
 create_folder <- function(folder_name, verbose = FALSE) {
     if (!dir.exists(folder_name)) {
         dir.create(folder_name, recursive = TRUE, showWarnings = FALSE)
@@ -30,15 +31,15 @@ create_folder <- function(folder_name, verbose = FALSE) {
     }
 }
 
-# cross-platform
+# Sanitize strings for use in file/folder names.
 sanitize <- function(x) gsub("[^A-Za-z0-9._-]", "_", as.character(x))
 
-# nombre carpeta instancia simulada
+# Build simulated-instance folder name.
 folder_name_simulated_instance <- function(I, B, G, C, lambda = 0.5) {
     paste0("I", I, "_B", B, "_G", G, "_C", C, "_lambda", round(100 * lambda))
 }
 
-# nombre carpeta def método
+# Build method-specific folder name (encoding options).
 folder_name_method <- function(method, mcmc_samples = NULL,
                                adjust_prob_cond_method = NULL,
                                adjust_prob_cond_every = NULL,
@@ -52,17 +53,17 @@ folder_name_method <- function(method, mcmc_samples = NULL,
     )
 }
 
-# nombre archivo json
+# Build per-seed JSON filename.
 file_name <- function(seed, seed_initial = -123, file_type = ".json") {
     paste0(seed, ifelse(seed_initial == -123, "", paste0("_pinit", seed_initial)), file_type)
 }
 
-# saltar casos costosos para exact
+# Skip heavy exact cases.
 fun_skip_cases <- function(method, G, C, skip_cases = TRUE) {
     skip_cases & (method == "exact") & (((G > 2) & (C == 5)) | (C > 5))
 }
 
-# EI y MAE
+# EI and MAE helpers (return NULL if missing).
 compute_EI <- function(x_est, x_true) {
     if (is.null(x_est)) {
         return(NULL)
@@ -76,7 +77,7 @@ compute_MAE <- function(x_est, x_true) {
     mean(abs(x_est - x_true))
 }
 
-# runtime en segundos (portable)
+# Runtime in seconds (portable wall-clock).
 nano_time <- function(expr) {
     t0 <- proc.time()[["elapsed"]]
     force(expr)
@@ -84,7 +85,134 @@ nano_time <- function(expr) {
     t1 - t0
 }
 
-# validar método
+# Reads simulated instance JSON outputs and returns summary metrics plus raw content.
+read_simulated_instances <- function(
+    base_dir = "output/simulated_instances",
+    include_details = FALSE,
+    verbose = TRUE) {
+    if (!dir.exists(base_dir)) {
+        stop("The directory doesn't exist: ", normalizePath(base_dir))
+    }
+
+    files <- list.files(base_dir, pattern = "\\.json$", recursive = TRUE, full.names = TRUE)
+    if (!include_details) {
+        files <- files[!grepl("/detail_\\d+\\.json$", files)]
+    }
+    if (length(files) == 0) {
+        stop("A json file wasn't found in: ", normalizePath(base_dir))
+    }
+
+    methods <- c(
+        "mvn_cdf_project_lp_FALSE", "mvn_pdf_project_lp_FALSE",
+        "mult_project_lp_FALSE", "exact_project_lp_FALSE",
+        "lphom", "lclphom", "nslphom_dual_w", "lphom_joint", "ei.MD.bayes"
+    )
+
+    parent_dir <- basename(dirname(files))
+    keep <- parent_dir %in% methods & grepl("/[0-9]+\\.json$", files)
+    files <- files[keep]
+    parent_dir <- parent_dir[keep]
+    if (length(files) == 0) {
+        stop(
+            "There aren't any JSON that match '.../<method>/<n>.json' under: ",
+            normalizePath(base_dir)
+        )
+    }
+
+    parse_params <- function(path) {
+        prm_dir <- basename(dirname(dirname(path)))
+        m <- regexec("^I(\\d+)_B(\\d+)_G(\\d+)_C(\\d+)_lambda(\\d+)$", prm_dir)
+        g <- regmatches(prm_dir, m)[[1]]
+        if (length(g) == 6) {
+            list(
+                I = as.integer(g[2]),
+                B = as.integer(g[3]),
+                G = as.integer(g[4]),
+                C = as.integer(g[5]),
+                lambda = as.integer(g[6])
+            )
+        } else {
+            list(I = NA_integer_, B = NA_integer_, G = NA_integer_, C = NA_integer_, lambda = NA_integer_)
+        }
+    }
+
+    scalarize_num <- function(val) {
+        if (is.null(val) || length(val) == 0L) {
+            return(NA_real_)
+        }
+        if (is.list(val)) val <- unlist(val, recursive = TRUE, use.names = FALSE)
+        as.numeric(val[[1]])
+    }
+    probs_to_vec <- function(z) {
+        if (is.null(z)) {
+            return(NULL)
+        }
+        if (is.list(z) && !is.matrix(z)) z <- unlist(z, recursive = TRUE, use.names = FALSE)
+        as.numeric(z)
+    }
+
+    rows <- vector("list", length(files))
+    raw <- vector("list", length(files))
+    names(raw) <- files
+
+    for (i in seq_along(files)) {
+        f <- files[i]
+        meth <- parent_dir[i]
+        prm <- parse_params(f)
+
+        txt <- readLines(f, warn = FALSE)
+        x <- jsonlite::fromJSON(paste(txt, collapse = "\n"), simplifyVector = TRUE)
+
+        raw[[i]] <- list(file = f, method = meth, params = prm, json = x)
+
+        EI_Z <- scalarize_num(x$EI_Z)
+        runtime <- scalarize_num(x$runtime)
+        EI_V <- scalarize_num(x$EI_V)
+        MAE_Z <- scalarize_num(x$MAE_Z)
+        MAE_V <- scalarize_num(x$MAE_V)
+        MAE_p <- scalarize_num(x$MAE_p)
+
+        if (is.na(MAE_p)) {
+            p_true <- probs_to_vec(x$p_true)
+            p_est <- probs_to_vec(x$p_est)
+            if (!is.null(p_true) && !is.null(p_est) && length(p_true) == length(p_est)) {
+                MAE_p <- mean(abs(p_est - p_true))
+            }
+        }
+
+        rows[[i]] <- data.frame(
+            file = f,
+            method = meth,
+            I = prm$I,
+            B = prm$B,
+            G = prm$G,
+            C = prm$C,
+            lambda = prm$lambda,
+            EI_Z = EI_Z,
+            EI_V = EI_V,
+            MAE_Z = MAE_Z,
+            MAE_V = MAE_V,
+            MAE_p = MAE_p,
+            runtime = runtime,
+            status = 0L,
+            stringsAsFactors = FALSE
+        )
+    }
+
+    df <- dplyr::bind_rows(rows)
+
+    if (verbose) {
+        message(sprintf(
+            "Read: %d rows | methods: %s",
+            nrow(df),
+            paste(sort(unique(df$method)), collapse = ", ")
+        ))
+    }
+
+    list(df = df, raw = raw)
+}
+
+# Validate method argument early for clearer errors.
 validate_method <- function(method, method_variable_name = "method", upper_function_name = "function") {
     valid_method <- c(
         "mcmc", "mvn_cdf", "mvn_pdf", "mult", "exact",
@@ -99,7 +227,7 @@ validate_method <- function(method, method_variable_name = "method", upper_funct
     }
 }
 
-# convierte ei.MD.bayes a formato Pavia
+# Convert ei.MD.bayes output to lphom-style format.
 ei.MD.bayes2lphom <- function(ei.object, votes_election1 = NULL, votes_election2 = NULL) {
     X <- ei.object$draws$Cell.counts
     if (length(dim(X)) != 3) stop("Vuelva a calcular la salida de ei.MD.bayes con la opcion ret.mcmc= F")
@@ -110,6 +238,7 @@ ei.MD.bayes2lphom <- function(ei.object, votes_election1 = NULL, votes_election2
     list("VTM" = pjk, "OTM" = pkj)
 }
 
+# Multinomial log-likelihood for given ballots/groups/probabilities.
 compute_loglik_mult <- function(X, W, P) {
     B <- nrow(X) # ballot boxes
     C <- ncol(X) # candidates

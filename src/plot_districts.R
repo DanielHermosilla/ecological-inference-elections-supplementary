@@ -1,4 +1,5 @@
 #!/usr/bin/env Rscript
+# Visualises per-instance method wins across districts for EI datasets.
 
 suppressPackageStartupMessages({
     library(stringr)
@@ -13,6 +14,7 @@ suppressPackageStartupMessages({
 })
 
 # ============== Font (optional Fira Sans via showtext) ==============
+# Optional Fira Sans font loader (no-op if unavailable).
 .use_fira <- function() {
     if (requireNamespace("showtext", quietly = TRUE) &&
         requireNamespace("sysfonts", quietly = TRUE)) {
@@ -28,6 +30,7 @@ suppressPackageStartupMessages({
 # ======================== CLI args helpers ===========================
 args <- commandArgs(trailingOnly = TRUE)
 
+# Simple CLI parsing helpers for flags/ints/bools.
 parse_opt_chr <- function(flag, default = NULL) {
     m <- grep(paste0("^", flag, "="), args, value = TRUE)
     if (length(m)) sub(paste0("^", flag, "="), "", m[1]) else default
@@ -35,6 +38,16 @@ parse_opt_chr <- function(flag, default = NULL) {
 parse_opt_int <- function(flag, default = NA_integer_) {
     v <- parse_opt_chr(flag, NULL)
     if (is.null(v)) default else suppressWarnings(as.integer(v))
+}
+parse_opt_lgl <- function(flag, default = FALSE) {
+    v <- tolower(parse_opt_chr(flag, NA_character_))
+    if (is.na(v)) {
+        return(default)
+    }
+    if (v == "") {
+        return(TRUE)
+    }
+    v %in% c("1", "true", "t", "yes", "y")
 }
 
 # Flags (mantenemos workers/limit/out; NO usamos inst-like):
@@ -44,6 +57,7 @@ parse_opt_int <- function(flag, default = NA_integer_) {
 req_workers <- parse_opt_int("--workers", NA_integer_)
 limit_inst <- parse_opt_int("--limit-inst", NA_integer_)
 outfile <- parse_opt_chr("--out", file.path("figures", "nz_relative_wins.pdf"))
+use_parallel <- parse_opt_lgl("--parallel", FALSE)
 
 # ============================ Config ================================
 base_ei <- file.path("output", "ei_instances")
@@ -113,13 +127,20 @@ if (length(instances) == 0) {
 }
 
 # ========================= Parallel setup ===========================
-if (is.finite(req_workers) && req_workers > 0) {
-    future::plan(future::multisession, workers = req_workers)
+if (use_parallel) {
+    if (is.finite(req_workers) && req_workers > 0) {
+        future::plan(future::multisession, workers = req_workers)
+    } else {
+        future::plan(future::multisession, workers = future::availableCores())
+    }
+    message("Running with parallel workers; disable via --parallel=false.")
 } else {
-    future::plan(future::multisession, workers = future::availableCores())
+    future::plan(future::sequential)
+    message("Running sequentially; pass --parallel=true to enable workers.")
 }
 
 # ===================== JSON field cache helpers =====================
+# Safe JSON reader that extracts one numeric field.
 read_field_from_json <- function(f, field) {
     tryCatch(
         {
@@ -147,6 +168,7 @@ read_field_from_json <- function(f, field) {
 }
 
 .cache_env <- new.env(parent = emptyenv())
+# Cache JSON reads by path/mtime to reduce repeated IO.
 get_cached_field <- function(f, field) {
     fi <- suppressWarnings(file.info(f))
     key <- paste0(f, "||", fi$mtime, "||", field)
@@ -166,6 +188,7 @@ get_cached_field <- function(f, field) {
 # 3) por distrito, elige el mínimo (si empatan, reparte 1/k entre ganadores),
 # 4) devuelve share de "wins" por método y proporción.
 
+# For one instance, tally per-district wins (lower is better by default).
 ei_wins_for_instance <- function(inst, field = "EI_V") {
     base_inst <- file.path(base_ei, inst)
     districts <- sort(list.dirs(base_inst, recursive = FALSE, full.names = FALSE))

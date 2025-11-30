@@ -1,3 +1,4 @@
+# Plot runtime vs number of candidates, faceted by groups.
 suppressPackageStartupMessages({
     library(jsonlite)
     library(dplyr)
@@ -6,7 +7,7 @@ suppressPackageStartupMessages({
     library(forcats)
     library(ggplot2)
 })
-source("src/utilities.R")
+source("src/R_functions.R")
 
 # ------------------ PLOT (runtime vs C, facet por G) ------------------
 plot_runtime_vsC_byG <- function(

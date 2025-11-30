@@ -1,4 +1,5 @@
 #!/usr/bin/env Rscript
+# Summarises simulated-instance metrics across method/parameter combinations.
 
 suppressPackageStartupMessages({
     library(stringr)
@@ -16,6 +17,17 @@ parse_opt_int <- function(pos, default = NA_integer_) {
 }
 parse_opt_chr <- function(pos, default = NULL) {
     if (length(args) >= pos) args[pos] else default
+}
+parse_flag_lgl <- function(flag, default = FALSE) {
+    m <- grep(flag, args, value = TRUE)
+    if (!length(m)) {
+        return(default)
+    }
+    val <- tolower(sub(paste0("^", flag, "=*"), "", m[1]))
+    if (identical(val, flag) || val == "") {
+        return(TRUE)
+    }
+    val %in% c("1", "true", "t", "yes", "y")
 }
 
 field_to_average <- {
@@ -35,6 +47,7 @@ scale_100 <- {
     m <- grep("^--percent$", args, value = TRUE)
     length(m) > 0
 }
+use_parallel <- parse_flag_lgl("--parallel", FALSE)
 
 inst_like <- {
     m <- grep("^--inst-like=", args, value = TRUE)
@@ -113,12 +126,19 @@ if (!length(methods)) {
     stop("None of the expected methods were found in simulated instances.")
 }
 
-if (is.finite(req_workers) && req_workers > 0) {
-    plan(multisession, workers = req_workers)
+if (use_parallel) {
+    if (is.finite(req_workers) && req_workers > 0) {
+        future::plan(future::multisession, workers = req_workers)
+    } else {
+        future::plan(future::multisession, workers = future::availableCores())
+    }
+    message("Running with parallel workers; disable via --parallel=false.")
 } else {
-    plan(multisession, workers = future::availableCores())
+    future::plan(future::sequential)
+    message("Running sequentially; enable parallelism via --parallel=true.")
 }
 
+# Safe JSON reader extracting one numeric field.
 read_field_from_json <- function(path, field) {
     tryCatch(
         {
@@ -143,6 +163,7 @@ get_cached_field <- function(path, field) {
     val
 }
 
+# Average a field across all JSON files for one simulated instance/method.
 by_instance_method <- function(inst, method, field) {
     dir_path <- file.path(base_sim, inst, method)
     if (!dir.exists(dir_path)) {

@@ -1,4 +1,5 @@
 #!/usr/bin/env Rscript
+# Computes paired differences and p-values between a target method and baselines across EI instances.
 
 suppressPackageStartupMessages({
     library(dplyr)
@@ -25,6 +26,13 @@ get_flag_val <- function(flag, default = NULL) {
     m <- grep(paste0("^--", flag, "="), args, value = TRUE)
     if (length(m)) sub(paste0("^--", flag, "="), "", m[1]) else default
 }
+get_flag_lgl <- function(flag, default = FALSE) {
+    v <- tolower(get_flag_val(flag, NA_character_))
+    if (is.na(v)) {
+        return(default)
+    }
+    v %in% c("1", "true", "t", "yes", "y")
+}
 
 # Posicionales:
 # 1) target_method (método objetivo a comparar)
@@ -36,6 +44,7 @@ field_to_test <- arg_chr(2, "EI_V")
 inst_like <- get_flag_val("inst-like", "ei_")
 limit_inst <- suppressWarnings(as.integer(get_flag_val("limit-inst", NA_integer_)))
 workers_arg <- suppressWarnings(as.integer(get_flag_val("workers", NA_integer_)))
+use_parallel <- get_flag_lgl("parallel", FALSE)
 
 stop_if(
     is.null(target_method) || is.na(target_method),
@@ -54,6 +63,7 @@ if (is.finite(limit_inst) && limit_inst > 0) instances <- head(instances, limit_
 # Baselines
 baselines <- c("mult_project_lp_FALSE_sym", "mvn_cdf_project_lp_FALSE_sym", "mvn_pdf_project_lp_FALSE_sym")
 
+# Inspect a sample of districts to discover which methods are present.
 discover_methods <- function(inst) {
     di <- file.path(base_ei, inst)
     dists <- sort(list.dirs(di, recursive = FALSE, full.names = FALSE))
@@ -73,6 +83,7 @@ row_methods <- setdiff(intersect(baselines, methods_found), target_method)
 stop_if(!length(row_methods), "None of the specified baselines are present in the detected instances.")
 
 # ============ Lectura JSON con caché ============
+# Read a numeric field from JSON with NA on error/missing.
 read_field_from_json <- function(f, field) {
     tryCatch(
         {
@@ -85,6 +96,7 @@ read_field_from_json <- function(f, field) {
 }
 
 cache_env <- new.env(parent = emptyenv())
+# Cache JSON reads keyed by mtime to avoid redundant parsing.
 get_cached_field <- function(f, field) {
     fi <- suppressWarnings(file.info(f))
     key <- paste0(f, "||", fi$mtime, "||", field)
@@ -98,6 +110,7 @@ get_cached_field <- function(f, field) {
 }
 
 # Promedio por distrito (inst, method, district)
+# Compute mean field value per district for a given method and instance.
 by_district_for <- function(inst, method, field) {
     base_inst <- file.path(base_ei, inst)
     districts <- sort(list.dirs(base_inst, recursive = FALSE, full.names = FALSE))
@@ -125,6 +138,7 @@ by_district_for <- function(inst, method, field) {
 #   diffs por distrito = (target - metodo)
 #   mean_diff = mean(diffs)
 #   pval = t.test(diffs == 0)
+# For one instance, compute diffs/pvals between target and each baseline method.
 diff_and_stats_for_instance <- function(inst, target_method, row_methods, field) {
     xt <- by_district_for(inst, target_method, field) %>%
         select(district, mean_val) %>%
@@ -170,30 +184,46 @@ diff_and_stats_for_instance <- function(inst, target_method, row_methods, field)
 }
 
 # ============ Paralelización por instancia ============
-n_cores <- if (is.finite(workers_arg) && workers_arg > 0) workers_arg else max(1L, parallel::detectCores(logical = TRUE) - 1L)
-cl <- parallel::makeCluster(n_cores)
-on.exit(try(parallel::stopCluster(cl), silent = TRUE), add = TRUE)
-doParallel::registerDoParallel(cl)
+n_cores <- 1L
+parts <- NULL
 
-parallel::clusterExport(
-    cl,
-    varlist = c(
-        "base_ei", "instances", "row_methods", "target_method",
-        "field_to_test", "cache_env",
-        "read_field_from_json", "get_cached_field",
-        "by_district_for", "diff_and_stats_for_instance"
-    ),
-    envir = environment()
-)
-parallel::clusterEvalQ(cl, {
-    library(dplyr)
-    library(tibble)
-    library(stringr)
-    NULL
-})
+if (use_parallel) {
+    n_cores <- if (is.finite(workers_arg) && workers_arg > 0) {
+        workers_arg
+    } else {
+        max(1L, parallel::detectCores(logical = TRUE) - 1L)
+    }
+    cl <- parallel::makeCluster(n_cores)
+    on.exit(try(parallel::stopCluster(cl), silent = TRUE), add = TRUE)
+    doParallel::registerDoParallel(cl)
 
-parts <- foreach(inst = instances, .packages = c("dplyr", "tibble")) %dopar% {
-    diff_and_stats_for_instance(inst, target_method, row_methods, field_to_test)
+    parallel::clusterExport(
+        cl,
+        varlist = c(
+            "base_ei", "instances", "row_methods", "target_method",
+            "field_to_test", "cache_env",
+            "read_field_from_json", "get_cached_field",
+            "by_district_for", "diff_and_stats_for_instance"
+        ),
+        envir = environment()
+    )
+    parallel::clusterEvalQ(cl, {
+        library(dplyr)
+        library(tibble)
+        library(stringr)
+        NULL
+    })
+
+    parts <- foreach(inst = instances, .packages = c("dplyr", "tibble")) %dopar% {
+        diff_and_stats_for_instance(inst, target_method, row_methods, field_to_test)
+    }
+} else {
+    message("Running sequentially; use --parallel=true to enable parallel workers.")
+    parts <- lapply(instances, diff_and_stats_for_instance,
+        target_method = target_method,
+        row_methods = row_methods,
+        field = field_to_test
+    )
 }
 
 # Long con todas las filas/instancias

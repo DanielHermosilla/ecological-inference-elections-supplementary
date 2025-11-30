@@ -1,5 +1,5 @@
+# Explore EM sensitivity by computing Frobenius distances across random starts.
 library(fastei)
-
 
 SEEDS <- c(1:20)
 CANDIDATES <- c(2:4)
