@@ -90,7 +90,7 @@ if (!dir.exists(base_ei)) {
     stop(sprintf("'%s' doesn't exist. Run this script from the project root.", base_ei))
 }
 
-# --- NEW: sólo errar si existe 'ei_instances' dentro de base_ei ---
+# --- Only error if an 'ei_instances' folder exists under base_ei ---
 all_instances <- sort(list.dirs(base_ei, recursive = FALSE, full.names = FALSE))
 has_ei_instances <- dir.exists(file.path(base_ei, "ei_instances"))
 
@@ -218,7 +218,7 @@ mean_df <- detail_df %>%
 # Matrix of means (rows = method, columns = instance)
 # =========================================
 
-# --- Definición del orden deseado ---
+# --- Desired order definition ---
 # order_methods <- c(
 #     "lclphom",
 #     "lphom",
@@ -240,7 +240,7 @@ order_methods <- c(
 
 
 
-# --- Aplicar el orden antes de pivotear ---
+# --- Apply order before pivoting ---
 mean_df <- mean_df %>%
     mutate(method = factor(method, levels = order_methods, ordered = TRUE))
 
@@ -254,7 +254,7 @@ mat <- mean_df %>%
     mutate(method = as.character(method)) %>%
     as.data.frame()
 
-# ====== pesos por instancia: # de distritos con datos ======
+# ====== Weights by instance: number of districts with data ======
 w_by_inst <- detail_df %>%
     dplyr::filter(is.finite(mean_val), n_files > 0) %>%
     dplyr::group_by(inst) %>%
@@ -262,12 +262,12 @@ w_by_inst <- detail_df %>%
 
 inst_cols <- setdiff(colnames(mat), "method")
 
-# alinear pesos al orden de columnas de la tabla
+# Align weights to the order of matrix columns
 w <- w_by_inst$n_districts[match(inst_cols, w_by_inst$inst)]
-# si alguna instancia no aparece en w_by_inst, ponemos 0 para que no pese
+# If an instance is missing in w_by_inst, set weight to 0 so it doesn't contribute
 w[is.na(w)] <- 0
 
-# ====== promedio ponderado por método (fila) ======
+# ====== Weighted average per method (row) ======
 weighted_mean_row <- function(x, w) {
     mask <- !is.na(x) & (w > 0)
     if (!any(mask)) {

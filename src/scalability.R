@@ -1,5 +1,5 @@
 # Benchmarks runtime feasibility over large ballot/voter combinations.
-# ---- Paquetes ----
+# ---- Packages ----
 library(fastei)
 library(lphom)
 library(ecolRxC)
@@ -42,7 +42,7 @@ safe_timeout <- function(expr, limit) {
             NULL
         },
         error = function(e) {
-            message("⛔ Error dentro de safe_timeout: ", conditionMessage(e))
+            message("⛔ Error inside safe_timeout: ", conditionMessage(e))
             NULL
         }
     )
@@ -51,7 +51,7 @@ safe_timeout <- function(expr, limit) {
 # Catch and log non-timeout errors without stopping the benchmark.
 safe_run <- function(expr) {
     tryCatch(expr, error = function(e) {
-        message("Error interno: ", conditionMessage(e))
+        message("Internal error: ", conditionMessage(e))
         NULL
     })
 }
@@ -158,7 +158,7 @@ run_one <- function(ballots, voters, TIME_LIMIT) {
 results_list <- future_lapply(
     seq_len(nrow(grid)),
     function(i) run_one(grid$ballots[i], grid$voters[i], TIME_LIMIT),
-    future.seed = TRUE # reproducibilidad de RNG entre workers
+    future.seed = TRUE # reproducible RNG across workers
 )
 
 results <- bind_rows(results_list)

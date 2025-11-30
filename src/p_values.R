@@ -34,9 +34,9 @@ get_flag_lgl <- function(flag, default = FALSE) {
     v %in% c("1", "true", "t", "yes", "y")
 }
 
-# Posicionales:
-# 1) target_method (método objetivo a comparar)
-# 2) field_to_test (campo del JSON, por defecto "EI_V")
+# Positional args:
+# 1) target_method (method to compare against baselines)
+# 2) field_to_test (JSON field, default "EI_V")
 target_method <- arg_chr(1, NULL)
 field_to_test <- arg_chr(2, "EI_V")
 
@@ -51,7 +51,7 @@ stop_if(
     "Usage: Rscript src/pval_matrix_by_instance.R <target_method> [field] [--inst-like=ei_] [--limit-inst=N] [--workers=M]"
 )
 
-# ============ Descubrimiento ============
+# ============ Discovery ============
 base_ei <- file.path("output", "ei_instances")
 stop_if(!dir.exists(base_ei), sprintf("'%s' doesn't exist. Run from project root.", base_ei))
 
@@ -82,7 +82,7 @@ stop_if(!length(methods_found), "No method folders detected under the given inst
 row_methods <- setdiff(intersect(baselines, methods_found), target_method)
 stop_if(!length(row_methods), "None of the specified baselines are present in the detected instances.")
 
-# ============ Lectura JSON con caché ============
+# ============ JSON reading with cache ============
 # Read a numeric field from JSON with NA on error/missing.
 read_field_from_json <- function(f, field) {
     tryCatch(
@@ -109,7 +109,7 @@ get_cached_field <- function(f, field) {
     v
 }
 
-# Promedio por distrito (inst, method, district)
+# Mean per district (inst, method, district)
 # Compute mean field value per district for a given method and instance.
 by_district_for <- function(inst, method, field) {
     base_inst <- file.path(base_ei, inst)
@@ -133,11 +133,7 @@ by_district_for <- function(inst, method, field) {
     bind_rows(rows)
 }
 
-# ============ Dif y p-valor por instancia ============
-# Para cada instancia y método fila:
-#   diffs por distrito = (target - metodo)
-#   mean_diff = mean(diffs)
-#   pval = t.test(diffs == 0)
+# ============ Difference and p-value per instance ============
 # For one instance, compute diffs/pvals between target and each baseline method.
 diff_and_stats_for_instance <- function(inst, target_method, row_methods, field) {
     xt <- by_district_for(inst, target_method, field) %>%
@@ -162,9 +158,9 @@ diff_and_stats_for_instance <- function(inst, target_method, row_methods, field)
                 }
             )
         } else {
-            dif <- j$val_t - j$val_m # <-- target - metodo (como pediste)
+            dif <- j$val_t - j$val_m # target - method
             mean_d <- mean(dif)
-            # p-valor (t-test a 1 muestra sobre difs)
+            # one-sample t-test over diffs
             pv <- tryCatch(stats::t.test(dif, mu = 0), error = function(e) NULL)
             pv <- if (is.null(pv)) NA_real_ else pv$p.value
             n <- length(dif)
@@ -183,7 +179,7 @@ diff_and_stats_for_instance <- function(inst, target_method, row_methods, field)
     bind_rows(lapply(rows, `[[`, "per_inst_row"))
 }
 
-# ============ Paralelización por instancia ============
+# ============ Parallelization per instance ============
 n_cores <- 1L
 parts <- NULL
 
@@ -226,11 +222,11 @@ if (use_parallel) {
     )
 }
 
-# Long con todas las filas/instancias
+# Long with all rows/instances
 stats_long <- bind_rows(parts) %>%
     arrange(factor(Method, levels = row_methods), inst)
 
-# ============ Agregar TOTAL (global) ============
+# ============ Add TOTAL (global) ============
 global_stats <- stats_long %>%
     group_by(Method) %>%
     summarise(
@@ -249,12 +245,12 @@ global_stats <- stats_long %>%
     select(Method, mean_diff, pval) %>%
     arrange(factor(Method, levels = row_methods))
 
-# ============ Wide: una columna por instancia (dos filas por método) ============
-# Formateadores
+# ============ Wide: one column per instance (two rows per method) ============
+# Formatters
 fmt_dif <- function(x) ifelse(is.na(x), "", sprintf("%.4f", as.numeric(x)))
 fmt_p <- function(p) ifelse(is.na(p), "", sprintf("(%.3g)", as.numeric(p)))
 
-# 1) Tablas separadas de diferencias y p-valores por instancia (wide)
+# 1) Separate diff and p-value tables per instance (wide)
 by_inst_diff <- stats_long %>%
     select(Method, inst, mean_diff) %>%
     tidyr::pivot_wider(id_cols = Method, names_from = inst, values_from = mean_diff)
@@ -263,15 +259,15 @@ by_inst_p <- stats_long %>%
     select(Method, inst, pval) %>%
     tidyr::pivot_wider(id_cols = Method, names_from = inst, values_from = pval)
 
-# Asegurar mismo orden de métodos
+# Keep the same method order
 by_inst_diff <- by_inst_diff %>% arrange(factor(Method, levels = row_methods))
 by_inst_p <- by_inst_p %>% arrange(factor(Method, levels = row_methods))
 
-# 2) Columna Total (global): diferencias y p-valores por separado
+# 2) Total (global) column for diffs and p-values separately
 total_diff <- tibble(Total = global_stats$mean_diff) %>% mutate(Total = fmt_dif(Total))
 total_p <- tibble(Total = global_stats$pval) %>% mutate(Total = fmt_p(Total))
 
-# 3) Formateo (string) de cada celda
+# 3) Format each cell as string
 inst_names <- setdiff(colnames(by_inst_diff), "Method")
 
 diff_wide_str <- by_inst_diff
@@ -282,22 +278,22 @@ if (length(inst_names)) {
     p_wide_str[, inst_names] <- lapply(by_inst_p[, inst_names], fmt_p)
 }
 
-# Añadir Total formateado
+# Add formatted Total
 diff_wide_str <- diff_wide_str %>%
     bind_cols(total_diff)
 
 p_wide_str <- p_wide_str %>%
     bind_cols(total_p)
 
-# 4) Intercalar filas: por cada método, primero la fila con ∆, después la fila con (p)
+# 4) Interleave rows: for each method, first the diff row, then the p-value row
 interleave_rows <- function(diff_df, p_df) {
     stopifnot(identical(diff_df$Method, p_df$Method))
     out_list <- vector("list", length = nrow(diff_df) * 2)
     k <- 1L
     for (i in seq_len(nrow(diff_df))) {
-        # Fila 1: diferencias
+        # Row 1: differences
         out_list[[k]] <- diff_df[i, , drop = FALSE]
-        # Fila 2: p-valores (entre paréntesis); vaciamos la etiqueta del método
+        # Row 2: p-values (in parentheses); blank out the method label
         row_p <- p_df[i, , drop = FALSE]
         row_p$Method[1] <- ""
         out_list[[k + 1]] <- row_p
@@ -308,8 +304,8 @@ interleave_rows <- function(diff_df, p_df) {
 
 table_wide_2rows <- interleave_rows(diff_wide_str, p_wide_str)
 
-# ============ Salidas ============
-# ASCII bonitillo
+# ============ Outputs ============
+# ASCII table
 ascii_table <- (function(df) {
     cols <- colnames(df)
     df_chr <- as.data.frame(lapply(df, as.character), stringsAsFactors = FALSE)
@@ -329,7 +325,7 @@ cat("Rows: for each method, the first row shows mean difference across districts
 cat("The 'Total' column pools ALL districts across ALL instances.\n")
 cat("=================================================================================\n")
 
-# ============ LaTeX tipo STARGAZER: dos filas por método ============
+# ============ LaTeX STARGAZER-style: two rows per method ============
 latex_df <- as.data.frame(table_wide_2rows, stringsAsFactors = FALSE)
 
 cat("\n% ====== STARGAZER-STYLE TABLE (coef row + p-value row) ======\n")

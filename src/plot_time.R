@@ -165,7 +165,7 @@ main <- function() {
     INSTANCE_DIR <- "output/simulated_instances"
     FIGURES_DIR <- "figures"
 
-    message("Leyendo instancias…")
+    message("Reading instances…")
     result <- read_simulated_instances(INSTANCE_DIR)
 
     plot_runtime_vsC_byG(

@@ -50,7 +50,7 @@ parse_opt_lgl <- function(flag, default = FALSE) {
     v %in% c("1", "true", "t", "yes", "y")
 }
 
-# Flags (mantenemos workers/limit/out; NO usamos inst-like):
+# Flags (keep workers/limit/out; inst-like is not used):
 #   --workers=8
 #   --limit-inst=20
 #   --out=figures/nz_relative_wins.pdf
@@ -62,7 +62,7 @@ use_parallel <- parse_opt_lgl("--parallel", FALSE)
 # ============================ Config ================================
 base_ei <- file.path("output", "ei_instances")
 
-# Métodos en el orden canónico + etiquetas amigables
+# Canonical method order + labels
 methods <- c(
     "lclphom",
     "lphom",
@@ -95,7 +95,7 @@ if (!dir.exists(base_ei)) {
     stop(sprintf("'%s' doesn't exist. Run this script from the project root.", base_ei))
 }
 
-# ========= ORDEN MANUAL DE LAS INSTANCIAS (se respeta en el eje X) ========
+# ========= Manual instance order (preserved on the x-axis) ========
 instances <- c(
     "ei_NZ_2002",
     "ei_NZ_2005",
@@ -107,23 +107,23 @@ instances <- c(
     "ei_NZ_2020"
 )
 
-# Limitar si se pide por flag
+# Optional limit via flag
 if (is.finite(limit_inst) && limit_inst > 0) {
     instances <- head(instances, limit_inst)
 }
 
-# Validar existencia física; advertir por faltantes pero continuar
+# Validate presence on disk; warn on missing but continue
 exist_mask <- file.exists(file.path(base_ei, instances))
 if (!all(exist_mask)) {
     missing <- instances[!exist_mask]
     warning(sprintf(
-        "Estas instancias no existen en '%s' y serán omitidas: %s",
+        "These instances do not exist in '%s' and will be skipped: %s",
         base_ei, paste(missing, collapse = ", ")
     ))
 }
 instances <- instances[exist_mask]
 if (length(instances) == 0) {
-    stop("No hay instancias válidas presentes en 'output/ei_instances'.")
+    stop("No valid instances present in 'output/ei_instances'.")
 }
 
 # ========================= Parallel setup ===========================
@@ -147,20 +147,16 @@ read_field_from_json <- function(f, field) {
             js <- jsonlite::fromJSON(f, simplifyVector = TRUE)
             v <- js[[field]]
 
-            # Si falta el campo o es NULL -> NA
             if (is.null(v)) {
                 return(NA_real_)
             }
 
-            # Asegura vector numérico
             v <- suppressWarnings(as.numeric(v))
 
-            # Si quedó vacío (length 0) -> NA
             if (!length(v)) {
                 return(NA_real_)
             }
 
-            # Si trae más de un valor, toma el primero (o usa mean(v) si prefieres)
             v[[1]]
         },
         error = function(e) NA_real_
@@ -182,12 +178,6 @@ get_cached_field <- function(f, field) {
 }
 
 # ===================== Core: per-instance tallies ====================
-# Para una instancia:
-# 1) lee distritos,
-# 2) para cada (district, method) promedia EI_V en sus JSONs,
-# 3) por distrito, elige el mínimo (si empatan, reparte 1/k entre ganadores),
-# 4) devuelve share de "wins" por método y proporción.
-
 # For one instance, tally per-district wins (lower is better by default).
 ei_wins_for_instance <- function(inst, field = "EI_V") {
     base_inst <- file.path(base_ei, inst)
@@ -200,7 +190,6 @@ ei_wins_for_instance <- function(inst, field = "EI_V") {
         ))
     }
 
-    # Medias por método dentro de cada distrito
     rows <- lapply(districts, function(d) {
         per_method <- lapply(methods, function(m) {
             files <- Sys.glob(file.path(base_inst, d, m, "*.json"))
@@ -220,7 +209,6 @@ ei_wins_for_instance <- function(inst, field = "EI_V") {
     })
     df <- bind_rows(rows)
 
-    # Distritos con al menos un valor finito
     districts_valid <- df %>%
         group_by(district) %>%
         summarise(has_data = any(is.finite(mean_val)), .groups = "drop") %>%
@@ -233,7 +221,6 @@ ei_wins_for_instance <- function(inst, field = "EI_V") {
 
     df_valid <- df %>% filter(district %in% districts_valid)
 
-    # Ganadores por distrito (repartiendo empates)
     winners <- df_valid %>%
         group_by(district) %>%
         mutate(min_val = suppressWarnings(min(mean_val, na.rm = TRUE))) %>%
@@ -241,7 +228,6 @@ ei_wins_for_instance <- function(inst, field = "EI_V") {
         mutate(win_share = ifelse(is_winner, 1 / sum(is_winner), 0)) %>%
         ungroup()
 
-    # Agregar shares por método
     out <- winners %>%
         group_by(method) %>%
         summarise(wins = sum(win_share), .groups = "drop") %>%
@@ -249,7 +235,6 @@ ei_wins_for_instance <- function(inst, field = "EI_V") {
         mutate(prop = ifelse(districts > 0, wins / districts, 0)) %>%
         select(inst, method, wins, districts, prop)
 
-    # Asegurar todos los métodos, incluso con 0
     out <- right_join(out, tibble(method = methods), by = "method") %>%
         mutate(
             inst = inst,
@@ -269,7 +254,7 @@ message(paste0(" - ", paste(instances, collapse = "\n - ")))
 res_list <- future_lapply(instances, ei_wins_for_instance, field = "EI_V", future.seed = TRUE)
 props_df <- bind_rows(res_list)
 
-# === Vector con los nombres literales que quieres mostrar ===
+# === Literal instance labels to display ===
 instance_labels <- c(
     "NZ_2002",
     "NZ_2005",
@@ -281,7 +266,7 @@ instance_labels <- c(
     "NZ_2020"
 )
 
-# === Asigna los labels manuales ===
+# === Apply manual labels ===
 props_df <- props_df %>%
     mutate(
         method = factor(method, levels = methods, labels = method_labels),

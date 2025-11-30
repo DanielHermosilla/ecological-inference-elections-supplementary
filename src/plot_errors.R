@@ -15,16 +15,16 @@ plot_EM_error_boxplot_R <- function(
     df,
     save_dir = "figures",
     save_name = "fig2-p-error.pdf",
-    # --- NUEVOS PARÁMETROS ---
-    groups_keep = NULL, # vector con grupos G a mantener, p.ej. c("1","2","3")
-    cand_keep = NULL, # vector con candidatos C a mantener (override a 'candidates')
-    candidates = c("all", "uar"), # "all" = todos los candidatos; "uar" = muestreo uniforme al azar
-    n_cand = NULL, # número de candidatos a muestrear si candidates = "uar"
-    seed = 123, # semilla para UAR
+    # --- Additional parameters ---
+    groups_keep = NULL, # groups G to keep, e.g. c("1","2","3")
+    cand_keep = NULL, # candidates C to keep (overrides 'candidates')
+    candidates = c("all", "uar"), # "all" = all candidates; "uar" = uniform-at-random sampling
+    n_cand = NULL, # number of candidates to sample if candidates = "uar"
+    seed = 123, # seed for UAR
     letter_size = 6) {
     candidates <- match.arg(candidates)
 
-    # ---- Fuente Fira Sans (opcional) ----
+    # ---- Optional Fira Sans font ----
     base_family <- "sans"
     if (requireNamespace("showtext", quietly = TRUE) &&
         requireNamespace("sysfonts", quietly = TRUE)) {
@@ -41,10 +41,10 @@ plot_EM_error_boxplot_R <- function(
         }
     }
 
-    # ---- Copia local ----
+    # ---- Local copy ----
     d <- df
 
-    # 1) Métodos a mostrar (y etiquetas)
+    # 1) Methods to display (and labels)
     full_order <- c(
         "ei.MD.bayes", "nslphom_dual_w",
         "mvn_cdf_project_lp_FALSE", "mvn_pdf_project_lp_FALSE",
@@ -55,34 +55,34 @@ plot_EM_error_boxplot_R <- function(
         "mvn_cdf", "mvn_pdf", "mult", "exact"
     )
 
-    # 2) Qué métodos están realmente en d
+    # 2) Methods actually present in d
     present <- intersect(full_order, unique(d$method))
 
-    # 3) Filtrar SOLO métodos presentes y quitar NAs problemáticos
+    # 3) Keep only present methods and drop problematic NAs
     d <- d %>%
         dplyr::filter(method %in% present) %>%
         dplyr::filter(!is.na(G), !is.na(C)) %>%
         dplyr::filter(!is.na(MAE_p2))
 
-    # ---- Filtros por grupos y candidatos (NUEVO) ----
-    # Normalizar a character para filtrar de forma robusta
+    # ---- Filters by group and candidate ----
+    # Normalize to character for robust filtering
     d <- d %>%
         mutate(
             G = as.character(G),
             C = as.character(C)
         )
 
-    # 3a) Filtrar por grupos si se indicó
+    # 3a) Filter by groups if provided
     if (!is.null(groups_keep)) {
         groups_keep <- as.character(groups_keep)
         d <- d %>% filter(G %in% groups_keep)
-        if (nrow(d) == 0) stop("Tras filtrar por 'groups_keep' no quedan filas.")
+        if (nrow(d) == 0) stop("Filtering by 'groups_keep' removed all rows.")
     }
 
-    # 3b) Filtrar por candidatos:
-    #     - Si se pasa 'cand_keep', se usa tal cual.
-    #     - Si no, y candidates == "uar", se muestrean 'n_cand' candidatos UAR.
-    #     - Si candidates == "all", no se filtra por C.
+    # 3b) Filter by candidates:
+    #     - If 'cand_keep' is passed, use it as-is.
+    #     - Otherwise, if candidates == "uar", sample 'n_cand' candidates.
+    #     - If candidates == "all", no candidate filtering is applied.
     cand_levels_all <- sort(unique(d$C))
 
     if (!is.null(cand_keep)) {
@@ -90,33 +90,31 @@ plot_EM_error_boxplot_R <- function(
         missing_c <- setdiff(cand_keep, cand_levels_all)
         if (length(missing_c)) {
             warning(
-                "Algunos candidatos de 'cand_keep' no existen en los datos y se ignorarán: ",
+                "Some 'cand_keep' candidates are missing in the data and will be ignored: ",
                 paste(missing_c, collapse = ", ")
             )
         }
         cand_keep_in <- intersect(cand_keep, cand_levels_all)
-        if (!length(cand_keep_in)) stop("Ninguno de los candidatos de 'cand_keep' existe en los datos.")
+        if (!length(cand_keep_in)) stop("None of the 'cand_keep' candidates exist in the data.")
         d <- d %>% filter(C %in% cand_keep_in)
     } else if (candidates == "uar") {
         if (is.null(n_cand) || !is.numeric(n_cand) || n_cand < 1) {
-            stop("Para candidates = 'uar' debes especificar un 'n_cand' >= 1.")
+            stop("For candidates = 'uar' you must provide an 'n_cand' >= 1.")
         }
         if (n_cand > length(cand_levels_all)) {
-            warning("n_cand > número de candidatos disponibles; se usará n_cand = ", length(cand_levels_all))
+            warning("n_cand > available candidates; using n_cand = ", length(cand_levels_all))
             n_cand <- length(cand_levels_all)
         }
         set.seed(seed)
         sampled_c <- sample(cand_levels_all, n_cand, replace = FALSE)
         d <- d %>% filter(C %in% sampled_c)
-    } # si candidates == "all": no filtramos por C
+    } # if candidates == "all": no filtering on C
 
-    # Volver a factorizar para facet ordenado/limpio
-    # --- NIVELES DE C ORDENADOS ---
+    # Re-factor for ordered, clean facets
+    # --- Ordered C levels ---
     if (!is.null(cand_keep)) {
-        # Usa el orden en que pasaste cand_keep
         c_levels <- cand_keep_in
     } else {
-        # Si no hay cand_keep, ordena numéricamente
         c_levels <- sort(unique(as.numeric(d$C)))
         c_levels <- as.character(c_levels)
     }
@@ -127,12 +125,12 @@ plot_EM_error_boxplot_R <- function(
             C = factor(C, levels = c_levels)
         )
 
-    # 4) Recodificar etiquetas de métodos
+    # 4) Recode method labels
     method_lut <- stats::setNames(full_labels[match(present, full_order)], present)
     d <- d %>%
         mutate(method = factor(method, levels = present, labels = unname(method_lut)))
 
-    # ---- Paleta (Okabe–Ito) ----
+    # ---- Palette (Okabe–Ito) ----
     oi <- c(
         "#0072B2", "#E69F00", "#009E73", "#D55E00",
         "#CC79A7", "#F0E442", "#56B4E9", "#999999"
@@ -172,7 +170,7 @@ plot_EM_error_boxplot_R <- function(
     )
     print(p)
 
-    # Retornar invisiblemente lo filtrado y el plot por si quieres reusar
+    # Return filtered data and plot invisibly for reuse
     invisible(list(data = d, plot = p))
 }
 
@@ -204,18 +202,18 @@ compute_mae_p2 <- function(entry) {
 }
 
 main <- function() {
-    INSTANCE_DIR <- "output/simulated_instances" # relativo a code/
+    INSTANCE_DIR <- "output/simulated_instances" # relative to repo root
     FIGURES_DIR <- "figures"
 
-    message("Leyendo instancias…")
+    message("Reading instances…")
     result <- read_simulated_instances(INSTANCE_DIR)
     if (!"MAE_p2" %in% names(result$df)) {
         mae_vec <- vapply(result$raw, compute_mae_p2, numeric(1))
         result$df$MAE_p2 <- mae_vec
     }
 
-    # EJEMPLOS DE USO:
-    # 1) Mantener grupos "1","2","3" y tomar 3 candidatos UAR
+    # Example usages:
+    # 1) Keep groups "1","2","3" and sample 3 candidates uniformly at random
     # plot_EM_error_boxplot_R(
     #     result$df,
     #     save_dir = FIGURES_DIR,
@@ -226,7 +224,7 @@ main <- function() {
     #     seed = 2025
     # )
 
-    # 2) Mantener grupos "1","3" y candidatos específicos "A","B","C" (si existen)
+    # 2) Keep groups "1","3" and specific candidates "A","B","C" (if present)
     plot_EM_error_boxplot_R(
         result$df,
         save_dir = FIGURES_DIR,
@@ -236,7 +234,7 @@ main <- function() {
         letter_size = 6
     )
 
-    # 3) Sólo filtrar grupos y dejar "todos" los candidatos presentes
+    # 3) Only filter groups and keep all candidates
     # plot_EM_error_boxplot_R(
     #     result$df,
     #     save_dir  = FIGURES_DIR,

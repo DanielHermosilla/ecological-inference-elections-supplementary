@@ -230,45 +230,12 @@ validate_method <- function(method, method_variable_name = "method", upper_funct
 # Convert ei.MD.bayes output to lphom-style format.
 ei.MD.bayes2lphom <- function(ei.object, votes_election1 = NULL, votes_election2 = NULL) {
     X <- ei.object$draws$Cell.counts
-    if (length(dim(X)) != 3) stop("Vuelva a calcular la salida de ei.MD.bayes con la opcion ret.mcmc= F")
+    if (length(dim(X)) != 3) stop("Recompute ei.MD.bayes output with the option ret.mcmc = FALSE")
     X <- apply(X, c(1, 2), mean)
     pjk <- X / rowSums(X)
     pkj <- round(X / colSums(X) * 100, 2)
     pjk <- round(pjk * 100, 2)
     list("VTM" = pjk, "OTM" = pkj)
-}
-
-# Multinomial log-likelihood for given ballots/groups/probabilities.
-compute_loglik_mult <- function(X, W, P) {
-    B <- nrow(X) # ballot boxes
-    C <- ncol(X) # candidates
-    G <- ncol(W) # groups
-
-    # WP[b,c] = sum_g W[b,g] * P[g,c]
-    WP <- W %*% P # (b x g) %*% (g x c) = (b x c)
-
-    # totalWP[b]
-    totalWP <- rowSums(WP)
-
-    # pi[b,c]
-    pi_bc <- WP / totalWP
-
-    # Totals in each ballot box
-    N_b <- rowSums(X)
-
-    # Compute log-likelihood
-    ll <- 0
-    for (b in 1:B) {
-        # multinomial coefficient part
-        ll_b <- lgamma(N_b[b] + 1) - sum(lgamma(X[b, ] + 1))
-
-        # sum_{c} X_{bc} * log(pi_{bc})
-        ll_b <- ll_b + sum(X[b, ] * log(pi_bc[b, ]))
-
-        ll <- ll + ll_b
-    }
-
-    return(ll)
 }
 
 # compute_loglik_pdf <- function(X, W, P, ridge = 1e-8) {
@@ -297,97 +264,7 @@ compute_loglik_mult <- function(X, W, P) {
 #                 } else {
 #                     Sigma[i, j] <- -Sigma[i, j]
 #                 }
-#             }
-#         }
-#         list(mu = mu, Sigma = Sigma)
-#     }
-#
-#     getAverageConditional_R <- function(P_red, mu, Sigma) {
-#         cond_mu <- matrix(0, nrow = G, ncol = n)
-#         cond_sigma <- vector("list", G)
-#         for (g in seq_len(G)) {
-#             p_g <- P_red[g, ]
-#             cond_mu[g, ] <- mu - p_g
-#             cond_sigma[[g]] <- Sigma + tcrossprod(p_g) - diag(p_g, n)
-#         }
-#         list(mu = cond_mu, Sigma = cond_sigma)
-#     }
-#
-#     M_2_PI <- 2 / pi
-#     ll <- 0.0
-#
-#     for (b in seq_len(B)) {
-#         pars <- getParams_R(b, W, P_red)
-#         mu <- pars$mu
-#         Sigma0 <- pars$Sigma
-#
-#         cond <- getAverageConditional_R(P_red, mu, Sigma0)
-#         mu_cond <- cond$mu
-#         sigma_cond <- cond$Sigma
-#
-#         if (C == 2) {
-#             normalizeConstant <- 1.0
-#         } else {
-#             diag_prod <- prod(diag(sigma_cond[[1]]))
-#             det <- 1 / (diag_prod * diag_prod)
-#             normalizeConstant <- sqrt((M_2_PI^n) * det)
-#         }
-#
-#         feature <- as.numeric(X[b, ])
-#         maha <- matrix(0, nrow = G, ncol = C)
-#
-#         for (g in seq_len(G)) {
-#             mu_g <- mu_cond[g, ]
-#             Sigma_g <- sigma_cond[[g]]
-#
-#             # ---- AQUI EL AJUSTE PARA SINGULARIDAD ----
-#             # si Σ_g es singular o casi singular, añadir ridge
-#             attempt_inverse <- try(solve(Sigma_g), silent = TRUE)
-#
-#             if (inherits(attempt_inverse, "try-error")) {
-#                 Sigma_g2 <- Sigma_g + ridge * diag(n)
-#                 attempt_inverse <- solve(Sigma_g2)
-#             }
-#             # ------------------------------------------
-#
-#             Sigma_inv <- attempt_inverse
-#
-#             x_trunc <- feature[1:n]
-#             diff <- x_trunc - mu_g
-#             z <- as.numeric(Sigma_inv %*% diff)
-#             baseline <- as.numeric(diff %*% z)
-#             diag_Sinv <- diag(Sigma_inv)
-#
-#             maha[g, C] <- baseline
-#             for (c in seq_len(n)) {
-#                 maha[g, c] <- baseline - 2 * z[c] + diag_Sinv[c]
-#             }
-#         }
-#
-#         g0 <- 1
-#         logw <- rep(-Inf, C)
-#         logw_max <- -Inf
-#
-#         for (c in seq_len(C)) {
-#             prior <- P[g0, c]
-#             logP <- if (prior > 0) log(prior) else -Inf
-#             logw[c] <- -0.5 * maha[g0, c] + logP
-#             if (is.finite(logw[c]) && logw[c] > logw_max) logw_max <- logw[c]
-#         }
-#
-#         den <- sum(exp(logw - logw_max))
-#         if (den > 0 && is.finite(logw_max)) {
-#             logden <- logw_max + log(den)
-#             ll <- ll + logden * log(normalizeConstant)
-#         }
-#     }
-#
-#     if (!is.finite(ll)) ll <- 0
-#     ll
-# }
-
-
-# ======== Núcleo: ejecuta un método de EI (real o simulado) ========
+# ======== Core: run one EI method (real or simulated) ========
 run_ecological_inference_algorithm <- function(
     W = NULL, X = NULL, Z_true = NULL, V_true = NULL, p_true = NULL,
     method,
@@ -426,128 +303,6 @@ run_ecological_inference_algorithm <- function(
                 adjust_prob_cond_every = if (!is.null(adjust_prob_cond_every)) adjust_prob_cond_every else FALSE, symmetric = symmetric
             )
         })
-        # if (symmetric) {
-        #     em_sym <- function(X, W) {
-        #         # 1) Correr EM en esta dirección
-        #         output <- run_em(
-        #             X = X, W = W, method = method, maxtime = maxtime,
-        #             initial_prob = initial_prob, seed = seed_initial,
-        #             mcmc_samples = mcmc_samples,
-        #             compute_ll = FALSE, # no necesitamos el logLik interno
-        #             adjust_prob_cond_method = adjust_prob_cond_method,
-        #             verbose = FALSE,
-        #             mvncdf_error = 1e-3,
-        #             adjust_prob_cond_every = if (!is.null(adjust_prob_cond_every)) {
-        #                 adjust_prob_cond_every
-        #             } else {
-        #                 FALSE
-        #             }
-        #         )
-        #
-        #         P <- output$prob # p_{gc} directo
-        #         E <- output$expected_outcome # z_{g c b}, dim = (G x C x B)
-        #
-        #         dims <- dim(E)
-        #         G <- dims[1]
-        #         C <- dims[2]
-        #         B <- dims[3]
-        #
-        #         # 2) Log-likelihood multinomial "directo" en esta dirección
-        #         ll_mult <- compute_loglik_pdf(X, W, P)
-        #
-        #         # 3) Construir q_induced_rev en "dirección reversa":
-        #         #    q_induced_rev[g,c,b] = z_{gcb} / x_{bc}
-        #         #    (reemplazando w_{bg} por x_{bc} como denominador)
-        #
-        #         X_expanded <- array(0, dim = dims) # g x c x b
-        #         for (b in seq_len(B)) {
-        #             for (c in seq_len(C)) {
-        #                 # repetir X[b,c] sobre la dimensión g
-        #                 X_expanded[, c, b] <- X[b, c]
-        #             }
-        #         }
-        #
-        #         q_induced_rev <- array(0, dim = dims)
-        #         mask <- X_expanded > 0
-        #         q_induced_rev[mask] <- E[mask] / X_expanded[mask]
-        #         # donde X == 0, dejamos q_induced_rev = 0 (no aporta al M-step)
-        #
-        #         # 4) M-step inducido usando x_{bc} y q_induced_rev:
-        #         #    p_induced_rev[g,c] = sum_b x_{bc} q_{b,g,c} / sum_b x_{bc}
-        #
-        #         q_bgc <- aperm(q_induced_rev, c(3, 1, 2)) # b x g x c
-        #
-        #         numerator <- matrix(0, nrow = G, ncol = C)
-        #         denom <- colSums(X) # sum_b x_{bc}
-        #
-        #         for (c in seq_len(C)) {
-        #             if (denom[c] > 0) {
-        #                 numerator[, c] <- t(X[, c]) %*% q_bgc[, , c] # 1xB %*% BxG = 1xG
-        #             }
-        #         }
-        #
-        #         p_induced_rev <- matrix(0, nrow = G, ncol = C)
-        #
-        #         nonzero_cols <- denom > 0
-        #         if (any(nonzero_cols)) {
-        #             p_induced_rev[, nonzero_cols] <-
-        #                 sweep(
-        #                     numerator[, nonzero_cols, drop = FALSE],
-        #                     2, denom[nonzero_cols], "/"
-        #                 )
-        #         }
-        #         # Para candidatos con denom == 0, podemos reutilizar P (no afectan al LL)
-        #         if (any(!nonzero_cols)) {
-        #             p_induced_rev[, !nonzero_cols] <- P[, !nonzero_cols, drop = FALSE]
-        #         }
-        #
-        #         # 5) Log-likelihood multinomial inducido
-        #         ll_induced_mult <- compute_loglik_mult(X, W, p_induced_rev)
-        #
-        #         invisible(list(
-        #             cond_prob            = output$cond_prob,
-        #             q_induced_rev        = q_induced_rev,
-        #             prob                 = P,
-        #             p_induced_rev        = p_induced_rev,
-        #             logLik_mult          = ll_mult,
-        #             logLik_induced_mult  = ll_induced_mult,
-        #             expected_outcome     = E
-        #         ))
-        #     }
-        #
-        #     # Dirección normal y reversa
-        #     normal_direction <- em_sym(X = X, W = W)
-        #     inv_direction <- em_sym(X = W, W = X)
-        #
-        #     # tau  y tau_rev con SIEMPRE loglik multinomial
-        #     tau <- (normal_direction$logLik_mult - inv_direction$logLik_induced_mult) /
-        #         abs(normal_direction$logLik_mult)
-        #
-        #     tau_rev <- (inv_direction$logLik_mult - normal_direction$logLik_induced_mult) /
-        #         abs(inv_direction$logLik_mult)
-        #
-        #     A1 <- normal_direction$expected_outcome # G x C x B
-        #     A2 <- aperm(inv_direction$expected_outcome, c(2, 1, 3)) # G x C x B
-        #
-        #     if (tau > 0 && tau_rev > 0) {
-        #         pond1 <- tau / (tau + tau_rev)
-        #         pond2 <- tau_rev / (tau + tau_rev)
-        #         Z_est <- pond1 * A1 + pond2 * A2
-        #         print("Los ponderadores son:")
-        #         print(pond1)
-        #         print(pond2)
-        #     } else if (tau < 0 && tau_rev > 0) {
-        #         Z_est <- A2
-        #     } else if (tau > 0 && tau_rev < 0) {
-        #         Z_est <- A1
-        #     } else {
-        #         pond1 <- abs(tau_rev) / (abs(tau) + abs(tau_rev))
-        #         pond2 <- abs(tau) / (abs(tau) + abs(tau_rev))
-        #         Z_est <- pond1 * A1 + pond2 * A2
-        #     }
-        #     Z_est_final <- Z_est
-        #     output$expected_outcome <- Z_est_final
-        # }
 
         Z_est <- output$expected_outcome
         V_est <- apply(Z_est, c(1, 2), sum)
@@ -742,7 +497,7 @@ run_one_ei_task <- function(tk, base_map, invert, symmetric, maxtime, save_json)
     invisible(NULL)
 }
 
-# ======== EI datasets (paralelo con doParallel) ========
+# ======== EI datasets (parallel with doParallel) ========
 run_eidatasets_instances <- function(
     method_arr,
     adjust_prob_cond_arr,
@@ -763,9 +518,9 @@ run_eidatasets_instances <- function(
 
     adjustable_methods <- c("mvn_cdf", "mvn_pdf", "mult", "mcmc", "exact")
 
-    # Prepara bases una sola vez
+    # Prepare bases once
     base_list <- lapply(bases_arr, function(base_name) {
-        df <- merge_small_options(get(base_name), 3, 3) # <- definida en tu código base
+        df <- merge_small_options(get(base_name), 3, 3) # defined in your base code
         list(name = base_name, df = df)
     })
     base_map <- setNames(
@@ -773,7 +528,7 @@ run_eidatasets_instances <- function(
         sapply(base_list, `[[`, "name")
     )
 
-    # Tareas
+    # Tasks
     tasks <- list()
     for (method in method_arr) {
         samples_arr <- if (identical(method, "mcmc")) mcmc_samples_arr else 1000L
@@ -813,7 +568,7 @@ run_eidatasets_instances <- function(
     }
 
     if (parallel) {
-        # Adjunta paquetes para %dopar%
+        # Attach packages for %dopar%
         if (!"package:foreach" %in% search()) library(foreach)
         if (!"package:doParallel" %in% search()) library(doParallel)
 
@@ -825,30 +580,30 @@ run_eidatasets_instances <- function(
             doRNG::registerDoRNG(reproducible_seed)
         }
 
-        # Exporta helpers GLOBALS (definidos arriba en este script)
+        # Export GLOBAL helpers (defined above in this script)
         parallel::clusterExport(
             cl,
             varlist = c(
-                # workers/funciones
+                # workers/functions
                 "run_one_ei_task",
                 "run_ecological_inference_algorithm",
                 # helpers llamados por run_ecological_inference_algorithm
                 "validate_method", "compute_EI", "compute_MAE", "nano_time",
                 "folder_name_method", "file_name", "ei.MD.bayes2lphom", "ecolRxC",
-                # rutas usadas al guardar
+                # paths used when saving
                 "PATH_SIM_INSTANCES", "PATH_EI_INSTANCES",
                 # util
                 "sanitize"
             ),
             envir = .GlobalEnv
         )
-        # Exporta OBJETOS LOCALES de esta función
+        # Export local objects from this function
         parallel::clusterExport(
             cl,
             varlist = c("base_map", "invert", "maxtime", "save_json"),
             envir = environment()
         )
-        # Carga paquetes en workers
+        # Load packages on workers
         parallel::clusterEvalQ(cl, {
             library(fastei)
             library(jsonlite)
@@ -883,7 +638,7 @@ run_eidatasets_instances <- function(
     invisible(NULL)
 }
 
-# ======== Simuladas (versión secuencial; puedes paralelizar igual si quieres) ========
+# ======== Simulated runs (sequential; parallelize similarly if desired) ========
 run_simulated_instances <- function(
     method_arr, mcmc_samples_arr,
     adjust_prob_cond_arr, adjust_prob_cond_every_arr,
