@@ -30,10 +30,13 @@ plot_EM_error_boxplot_R <- function(
         requireNamespace("sysfonts", quietly = TRUE)) {
         have_font <- "Fira Sans" %in% sysfonts::font_families()
         if (!have_font) {
-            have_font <- tryCatch({
-                sysfonts::font_add_google("Fira Sans", "Fira Sans")
-                TRUE
-            }, error = function(e) FALSE)
+            have_font <- tryCatch(
+                {
+                    sysfonts::font_add_google("Fira Sans", "Fira Sans")
+                    TRUE
+                },
+                error = function(e) FALSE
+            )
         }
         if (have_font) {
             showtext::showtext_auto()
@@ -176,7 +179,9 @@ plot_EM_error_boxplot_R <- function(
 
 # Coerce lists/arrays to a numeric matrix for metric computation.
 as_numeric_matrix <- function(x) {
-    if (is.null(x)) return(NULL)
+    if (is.null(x)) {
+        return(NULL)
+    }
     if (is.array(x) || is.matrix(x)) {
         return(apply(x, c(1, 2), as.numeric))
     }
@@ -193,10 +198,16 @@ compute_mae_p2 <- function(entry) {
     js <- entry$json
     p_true <- as_numeric_matrix(js$p_true)
     p_est <- as_numeric_matrix(js$p_est)
-    if (is.null(p_true) || is.null(p_est)) return(NA_real_)
-    if (!all(dim(p_true) == dim(p_est))) return(NA_real_)
+    if (is.null(p_true) || is.null(p_est)) {
+        return(NA_real_)
+    }
+    if (!all(dim(p_true) == dim(p_est))) {
+        return(NA_real_)
+    }
     G <- nrow(p_true)
-    if (!is.finite(G) || G <= 0) return(NA_real_)
+    if (!is.finite(G) || G <= 0) {
+        return(NA_real_)
+    }
     total_abs <- sum(abs(p_est - p_true))
     total_abs / (2 * G)
 }
@@ -228,7 +239,7 @@ main <- function() {
     plot_EM_error_boxplot_R(
         result$df,
         save_dir = FIGURES_DIR,
-        save_name = "sim_prob_error_3.pdf",
+        save_name = "sim_prob_error_3.png",
         groups_keep = c("2", "3", "4", "6", "8"),
         cand_keep = c("2", "3", "5", "10"),
         letter_size = 6

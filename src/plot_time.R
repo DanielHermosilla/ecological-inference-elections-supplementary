@@ -171,7 +171,7 @@ main <- function() {
     plot_runtime_vsC_byG(
         result$df,
         save_dir = FIGURES_DIR,
-        save_name = "sim_runtime_3.pdf"
+        save_name = "sim_runtime_3.png"
         # letter_size = 13
     )
 }
