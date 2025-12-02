@@ -303,7 +303,7 @@ p <- ggplot(props_df, aes(x = inst, y = prop, fill = method)) +
 
 # ============================== Save =================================
 dir.create(dirname(outfile), recursive = TRUE, showWarnings = FALSE)
-ggsave(outfile, p, width = 6.2, height = 3, dpi = 300, device = grDevices::cairo_pdf)
+ggsave(outfile, p, width = 6.2, height = 3, dpi = 300) # , device = grDevices::cairo_pdf)
 message(sprintf("[OK] Saved relative stacked bar chart to: %s", normalizePath(outfile, mustWork = FALSE)))
 
 print(p)

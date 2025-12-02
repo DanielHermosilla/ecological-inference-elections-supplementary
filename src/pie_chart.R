@@ -368,7 +368,7 @@ dir.create(dirname(outfile), showWarnings = FALSE, recursive = TRUE)
 ext <- tolower(tools::file_ext(outfile))
 if (ext %in% c("png", "jpg", "jpeg", "tiff", "bmp")) {
     # ggsave(outfile, plot = p, width = 18, height = 10, dpi = 300)
-    ggsave(outfile, plot = p, width = 6, height = 3.3, device = grDevices::cairo_pdf)
+    ggsave(outfile, plot = p, width = 6, height = 3.3)
 } else if (ext %in% c("pdf")) {
     ggsave(outfile, plot = p, width = 6, height = 3.3, device = grDevices::cairo_pdf)
 } else {

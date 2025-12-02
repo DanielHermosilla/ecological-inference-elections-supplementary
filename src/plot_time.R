@@ -154,7 +154,7 @@ plot_runtime_vsC_byG <- function(
     # Save and print
     dir.create(save_dir, showWarnings = FALSE, recursive = TRUE)
     ggsave(file.path(save_dir, save_name), p,
-        width = 6.3, height = 4, dpi = 300, device = grDevices::cairo_pdf
+        width = 6.3, height = 4, dpi = 300 # , device = grDevices::cairo_pdf
     )
     # paper -> width = 6.3, height = 4
     # presentation -> width = 7.3, height = 5

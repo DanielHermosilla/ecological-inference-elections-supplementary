@@ -168,8 +168,8 @@ plot_EM_error_boxplot_R <- function(
 
     dir.create(save_dir, showWarnings = FALSE, recursive = TRUE)
     ggsave(file.path(save_dir, save_name), p,
-        width = width, height = height, dpi = 300,
-        device = grDevices::cairo_pdf
+        width = width, height = height, dpi = 300
+        # device = grDevices::cairo_pdf
     )
     print(p)
 
