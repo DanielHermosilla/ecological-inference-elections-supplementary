@@ -21,7 +21,7 @@ R scripts with the supplementary material for the paper “An Accurate, Fast, an
 
 - Pairwise method pies: `Rscript src/pie_chart.R [outfile] [--field=EI_V] [--inst-like=ei_] [--limit-inst=N] [--workers=M] [--parallel=true] [--higher-better=true]`
 
-[!pie_chart](figures/pie_chart.png)
+![pie_chart](figures/pie_chart.png)
 
 - Differences and p-values: `Rscript src/p_values.R <target_method> [field_to_test] [--inst-like=ei_] [--limit-inst=N] [--workers=M] [--parallel=true]`.
 
