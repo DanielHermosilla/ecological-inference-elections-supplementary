@@ -296,7 +296,6 @@ run_ecological_inference_algorithm <- function(
                 X = X, W = W, method = method, maxtime = maxtime,
                 initial_prob = initial_prob, seed = seed_initial,
                 mcmc_samples = mcmc_samples,
-                compute_ll = if (method == "mvn_cdf") TRUE else FALSE,
                 adjust_prob_cond_method = adjust_prob_cond_method,
                 verbose = FALSE,
                 mvncdf_error = 1e-3,
