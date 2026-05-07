@@ -42,7 +42,7 @@ include_nslphom <- parse_flag("include-nslphom", FALSE)
 
 base_root <- file.path("output", "ei_instances")
 if (!dir.exists(base_root)) {
-    stop(sprintf("No existe '%s'. Ejecuta el script desde la raiz del proyecto.", base_root))
+    stop(sprintf("Directory '%s' not found. Run the script from the project root.", base_root))
 }
 
 maori_districts <- c(
@@ -215,7 +215,7 @@ as_num_matrix <- function(x) {
     }
 
     if (!is.list(x)) {
-        stop("No se pudo convertir el objeto a matriz numerica.")
+        stop("Could not convert the object to a numeric matrix.")
     }
 
     rows <- lapply(x, function(row) as.numeric(unlist(row, recursive = TRUE, use.names = FALSE)))
@@ -232,7 +232,7 @@ as_num_matrix <- function(x) {
 # jk tables rather than only from margins.
 as_num_array3 <- function(x, target_dims) {
     if (is.null(x) || !length(x)) {
-        stop("Z_est vacio o ausente.")
+        stop("Z_est is empty or missing.")
     }
 
     raw_dims <- c(length(x), length(x[[1]]), length(x[[1]][[1]]))
@@ -253,7 +253,7 @@ as_num_array3 <- function(x, target_dims) {
     }
 
     stop(sprintf(
-        "No se pudo orientar Z_est. Dimensiones encontradas: [%s]; esperadas: [%s].",
+        "Could not orient Z_est. Found dimensions: [%s]; expected: [%s].",
         paste(raw_dims, collapse = ", "),
         paste(target_dims, collapse = ", ")
     ))
@@ -489,7 +489,7 @@ raw_rows <- purrr::imap_dfr(method_candidates, function(candidates, method_label
 })
 
 if (!nrow(raw_rows)) {
-    stop("No se pudieron construir filas para ningun metodo.")
+    stop("Could not build rows for any method.")
 }
 
 if (exclude_maori) {
@@ -500,14 +500,14 @@ analysis_rows <- raw_rows %>%
     filter(if_all(all_of(c("EI", base_predictor_names)), ~ is.finite(.x)))
 
 if (!nrow(analysis_rows)) {
-    stop("No quedaron observaciones despues de filtrar valores faltantes.")
+    stop("No observations remained after filtering missing values.")
 }
 
 if (use_common_sample) {
     sample_rows <- analysis_rows %>%
         filter(method %in% table_method_order)
     if (!nrow(sample_rows)) {
-        stop("No hay observaciones para los metodos requeridos en la tabla final.")
+        stop("No observations for the required methods in the final table.")
     }
     ids_by_method <- split(sample_rows$case_id, sample_rows$method)
     common_ids <- Reduce(intersect, ids_by_method)
@@ -515,7 +515,7 @@ if (use_common_sample) {
         analysis_rows <- analysis_rows %>% filter(case_id %in% common_ids)
     } else {
         warning(sprintf(
-            "No hay una muestra comun entre los metodos requeridos (%s); se usara la muestra disponible por metodo.",
+            "No common sample across the required methods (%s); using each method's available sample.",
             paste(table_method_order, collapse = ", ")
         ))
     }
@@ -538,7 +538,7 @@ table_rows <- analysis_rows %>%
 
 if (length(unique(table_rows$method)) != length(table_method_order)) {
     stop(sprintf(
-        "No estan disponibles todos los metodos requeridos para la tabla final. Requeridos: %s",
+        "Not all required methods are available for the final table. Required: %s",
         paste(table_method_order, collapse = ", ")
     ))
 }
@@ -559,7 +559,7 @@ ei_wide <- reshape(
 required_ei_cols <- paste0("EI.", table_method_order)
 if (!all(required_ei_cols %in% names(ei_wide))) {
     stop(sprintf(
-        "No se pudieron construir las columnas EI anchas esperadas. Columnas disponibles: %s",
+        "Could not build the expected wide EI columns. Available columns: %s",
         paste(names(ei_wide), collapse = ", ")
     ))
 }
@@ -674,7 +674,7 @@ render_stargazer <- function(type, ...) {
         return(stargazer(m1, m2, m3, m4, m5, m6, type = type, ...))
     }
 
-    stop(sprintf("Numero inesperado de modelos para stargazer: %d", length(model_list)))
+    stop(sprintf("Unexpected number of models for stargazer: %d", length(model_list)))
 }
 
 stargazer_label_map <- c(
@@ -732,7 +732,7 @@ sink(sink_file)
 text_table <- render_stargazer(
     type = "text",
     title = "Performance across instances covariates",
-    dep.var.caption = "Variable dependiente: EI",
+    dep.var.caption = "Dependent variable: EI",
     dep.var.labels.include = FALSE,
     covariate.labels = active_stargazer_labels(formula_table5),
     keep.stat = c("rsq", "ser"),
@@ -805,7 +805,7 @@ latex_row <- function(label, term) {
 }
 
 if (length(model_list) != 6) {
-    stop("El formato LaTeX exacto requiere exactamente 6 modelos.")
+    stop("The exact LaTeX format requires exactly 6 models.")
 }
 
 latex_terms <- c(
@@ -844,12 +844,12 @@ latex_table <- c(
     "\\end{table}"
 )
 writeLines(latex_table, out_tex)
-cat("\nMatriz de correlacion entre predictores:\n")
+cat("\nCorrelation matrix of predictors:\n")
 cat(paste(render_correlation_matrix(predictor_base), collapse = "\n"), "\n")
 
-message(sprintf("Filas de analisis: %d", nrow(analysis_rows)))
+message(sprintf("Analysis rows: %d", nrow(analysis_rows)))
 message(sprintf(
-    "Orden de columnas Stargazer: %s",
+    "Stargazer column order: %s",
     paste(sprintf("(%d) %s", seq_along(response_labels), response_labels), collapse = " | ")
 ))
-message(sprintf("Tabla LaTeX escrita en: %s", normalizePath(out_tex, mustWork = FALSE)))
+message(sprintf("LaTeX table written to: %s", normalizePath(out_tex, mustWork = FALSE)))
