@@ -397,17 +397,96 @@
   ],
   "iterations": 182,
   "logLik": -420.7801013433,
-  "time": 0.074895,
+  "time": 0.109064,
   "message": "Converged",
   "status": 0,
+  "mixture": 1,
+  "K": 1,
+  "H": 1,
+  "phi": 1,
+  "responsibilities": [
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1]
+  ],
+  "component_prob": [
+    [
+      [0.00032147380321],
+      [0.066787063637],
+      [0.66140147405],
+      [0.27148998851]
+    ],
+    [
+      [0.47589283228],
+      [0.42660344582],
+      [0.094106718095],
+      [0.0033970038104]
+    ],
+    [
+      [0.037207744723],
+      [0.88830578705],
+      [0.022335655397],
+      [0.052150812829]
+    ],
+    [
+      [0.00053358186488],
+      [0.012265682014],
+      [0.96895093954],
+      [0.018249796578]
+    ],
+    [
+      [0.0043591682323],
+      [0.33940201566],
+      [0.53049972451],
+      [0.1257390916]
+    ],
+    [
+      [0.37874824892],
+      [0.36092710386],
+      [0.063721692724],
+      [0.1966029545]
+    ]
+  ],
   "miniter": 0,
-  "maxiter": 1000,
+  "maxiter": 10000,
   "maxtime": 3600,
   "param_threshold": 0.001,
   "ll_threshold": "-Inf",
   "initial_prob": "group_proportional",
   "adjust_prob_cond_method": "project_lp",
   "adjust_prob_cond_every": false,
+  "HET": 2.0379905418,
   "candidates_id": ["ROBERTSON, Colin Donald.c", "STREET, Maryan.c", "SMITH, Nick.c", "Other candidates votes.c"],
   "group_id": ["Conservative.p", "Green Party.p", "Labour Party.p", "National Party.p", "New Zealand First Party.p", "Other parties votes.p"]
 }

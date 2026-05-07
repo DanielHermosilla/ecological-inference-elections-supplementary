@@ -343,17 +343,90 @@
     [0.04202406171, 0.37893686259, 0.33820677954, 0.24083229616]
   ],
   "iterations": 129,
-  "time": 0.010624,
+  "logLik": -407.8538553836,
+  "time": 0.019641,
   "message": "Converged",
   "status": 0,
+  "mixture": 1,
+  "K": 1,
+  "H": 1,
+  "phi": 1,
+  "responsibilities": [
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1]
+  ],
+  "component_prob": [
+    [
+      [0.39626122513],
+      [0.22609574705],
+      [0.37324903791],
+      [0.0043939899015]
+    ],
+    [
+      [0.011191278562],
+      [0.79280041325],
+      [0.066522740761],
+      [0.12948556743]
+    ],
+    [
+      [0.015704381969],
+      [0.035862439109],
+      [0.94042466305],
+      [0.0080085158676]
+    ],
+    [
+      [0.012585298086],
+      [0.46019495415],
+      [0.1091110622],
+      [0.41810868556]
+    ],
+    [
+      [0.04202406171],
+      [0.37893686259],
+      [0.33820677954],
+      [0.24083229616]
+    ]
+  ],
   "miniter": 0,
-  "maxiter": 1000,
+  "maxiter": 10000,
   "maxtime": 3600,
   "param_threshold": 0.001,
   "ll_threshold": "-Inf",
   "initial_prob": "group_proportional",
   "adjust_prob_cond_method": "project_lp",
   "adjust_prob_cond_every": false,
+  "HET": 2.5121694522,
   "candidates_id": ["TAVA, Vernon Ivan.c", "GILLON, Wendy Paula Kirsty.c", "COLEMAN, Jonathan David.c", "Other candidates votes.c"],
   "group_id": ["Green Party.p", "Labour Party.p", "National Party.p", "New Zealand First Party.p", "Other parties votes.p"]
 }

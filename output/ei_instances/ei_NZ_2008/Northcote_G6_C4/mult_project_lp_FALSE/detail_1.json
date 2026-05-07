@@ -373,17 +373,95 @@
     [0.1117393005, 0.46488776085, 0.16377461327, 0.25959832537]
   ],
   "iterations": 122,
-  "time": 0.000227,
+  "logLik": -430.3240461597,
+  "time": 0.000538,
   "message": "Converged",
   "status": 0,
+  "mixture": 1,
+  "K": 1,
+  "H": 1,
+  "phi": 1,
+  "responsibilities": [
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1]
+  ],
+  "component_prob": [
+    [
+      [0.01257405077],
+      [0.055170820225],
+      [0.92372465849],
+      [0.0085304705164]
+    ],
+    [
+      [0.41548962053],
+      [0.14703312248],
+      [0.4354384436],
+      [0.0020388133987]
+    ],
+    [
+      [0.06058096009],
+      [0.77342612868],
+      [0.079842396081],
+      [0.086150515144]
+    ],
+    [
+      [0.01301163921],
+      [0.041642922687],
+      [0.91114596498],
+      [0.034199473122]
+    ],
+    [
+      [0.0018949323805],
+      [0.70344092445],
+      [0.18700337954],
+      [0.10766076363]
+    ],
+    [
+      [0.1117393005],
+      [0.46488776085],
+      [0.16377461327],
+      [0.25959832537]
+    ]
+  ],
   "miniter": 0,
-  "maxiter": 1000,
+  "maxiter": 10000,
   "maxtime": 3600,
   "param_threshold": 0.001,
   "ll_threshold": "-Inf",
   "initial_prob": "group_proportional",
   "adjust_prob_cond_method": "project_lp",
   "adjust_prob_cond_every": false,
+  "HET": 3.3539684551,
   "candidates_id": ["ELLEY, Jeanette Susan.c", "McCRACKEN, Hamish Kennedy.c", "COLEMAN, Jonathan David.c", "Other candidates votes.c"],
   "group_id": ["ACT New Zealand.p", "Green Party.p", "Labour Party.p", "National Party.p", "New Zealand First Party.p", "Other parties votes.p"]
 }

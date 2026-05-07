@@ -431,17 +431,94 @@
   ],
   "iterations": 142,
   "logLik": -353.3953513807,
-  "time": 0.037142,
+  "time": 0.05525,
   "message": "Converged",
   "status": 0,
+  "mixture": 1,
+  "K": 1,
+  "H": 1,
+  "phi": 1,
+  "responsibilities": [
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1]
+  ],
+  "component_prob": [
+    [
+      [0.053281413181],
+      [0.68945896012],
+      [0.2572596267]
+    ],
+    [
+      [0.9797525211],
+      [0.020170681302],
+      [7.6797596826e-05]
+    ],
+    [
+      [0.81753873039],
+      [0.059604973625],
+      [0.12285629599]
+    ],
+    [
+      [0.013331230088],
+      [0.96457719577],
+      [0.022091574146]
+    ],
+    [
+      [0.37747887378],
+      [0.39030107374],
+      [0.23222005249]
+    ],
+    [
+      [0.23518441886],
+      [0.37772609654],
+      [0.3870894846]
+    ]
+  ],
   "miniter": 0,
-  "maxiter": 1000,
+  "maxiter": 10000,
   "maxtime": 3600,
   "param_threshold": 0.001,
   "ll_threshold": "-Inf",
   "initial_prob": "group_proportional",
   "adjust_prob_cond_method": "project_lp",
   "adjust_prob_cond_every": false,
+  "HET": 2.0607965524,
   "candidates_id": ["TWYFORD, Philip Stoner.c", "MAPP, Wayne Daniel.c", "Other candidates votes.c"],
   "group_id": ["ACT New Zealand.p", "Green Party.p", "Labour Party.p", "National Party.p", "New Zealand First Party.p", "Other parties votes.p"]
 }

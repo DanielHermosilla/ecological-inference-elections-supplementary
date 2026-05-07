@@ -66,6 +66,7 @@ methods <- c(
     "mult_project_lp_FALSE_sym",
     "mvn_cdf_project_lp_FALSE_sym",
     "mvn_pdf_project_lp_FALSE_sym",
+    "BPF",
     "nslphom_dual_a",
     "nslphom_dual_w",
     "nslphom_joint",
@@ -257,6 +258,7 @@ col_labels_map <- c(
     "mult_project_lp_FALSE_sym" = "mult_sym",
     "mvn_cdf_project_lp_FALSE_sym" = "mvn_cdf_sym",
     "mvn_pdf_project_lp_FALSE_sym" = "mvn_pdf_sym",
+    "BPF" = "BPF",
     "nslphom_joint" = "nslphom_joint",
     "nslphom_dual_a" = "nslphom_dual_a",
     "nslphom_dual_w" = "nslphom_dual_w"
@@ -336,7 +338,7 @@ p <- ggplot(pie_long, aes(x = "1", y = prop, fill = who)) +
         values = fill_map,
         breaks = c("Proposed method", "Benchmark method") # omit "Ties" from legend
     ) +
-    theme_bw(base_family = base_family, base_size = 8) +
+    theme_bw(base_family = base_family, base_size = 22) +
     labs(fill = NULL, x = NULL, y = NULL) +
     theme(
         axis.text = element_blank(),
@@ -359,7 +361,7 @@ p <- p + geom_text(
         )
     ),
     inherit.aes = FALSE,
-    size = 2,
+    size = 6,
     fontface = "bold"
 )
 

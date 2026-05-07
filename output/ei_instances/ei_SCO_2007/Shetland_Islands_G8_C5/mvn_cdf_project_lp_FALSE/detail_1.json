@@ -415,17 +415,110 @@
   ],
   "iterations": 134,
   "logLik": -344.0884984086,
-  "time": 0.088577,
+  "time": 0.1342,
   "message": "Converged",
   "status": 0,
+  "mixture": 1,
+  "K": 1,
+  "H": 1,
+  "phi": 1,
+  "responsibilities": [
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1]
+  ],
+  "component_prob": [
+    [
+      [0.082634990879],
+      [0.22897531055],
+      [0.28456164973],
+      [0.32782953013],
+      [0.075998518721]
+    ],
+    [
+      [0.015497005265],
+      [4.4182024073e-05],
+      [0.00071039737802],
+      [0.51633896934],
+      [0.46740944599]
+    ],
+    [
+      [0.11117958442],
+      [0.019683350255],
+      [0.18992261493],
+      [0.67906271683],
+      [0.0001517335651]
+    ],
+    [
+      [0.00031909895299],
+      [0.65005153511],
+      [0.0054988280413],
+      [0.34061672462],
+      [0.0035138132799]
+    ],
+    [
+      [0.37286087684],
+      [0.011118997024],
+      [0.06298755619],
+      [0.5524658111],
+      [0.00056675884855]
+    ],
+    [
+      [0.0081653035176],
+      [0.046923955763],
+      [0.49307237959],
+      [0.41854014581],
+      [0.033298215319]
+    ],
+    [
+      [0.014032243565],
+      [0.045717168298],
+      [0.0090373375484],
+      [0.92733760783],
+      [0.0038756427565]
+    ],
+    [
+      [0.064521237652],
+      [0.025981975255],
+      [0.22384284441],
+      [0.68449373244],
+      [0.0011602102461]
+    ]
+  ],
   "miniter": 0,
-  "maxiter": 1000,
+  "maxiter": 10000,
   "maxtime": 3600,
   "param_threshold": 0.001,
   "ll_threshold": "-Inf",
   "initial_prob": "group_proportional",
   "adjust_prob_cond_method": "project_lp",
   "adjust_prob_cond_every": false,
+  "HET": 4.0832699678,
   "candidates_id": ["Scott Burnett.c", "Mark Graham Jones.c", "Valerie Anne Simpson.c", "Tavish Hamilton Scott.c", "Other candidates votes.c"],
   "group_id": ["Christian Party \"Proclaiming Christ's Lordship\".p", "Uncertain or Blank.p", "Scottish Green Party.p", "Conservative and Unionist Party [The].p", "Labour Party [The].p", "Scottish National Party.p", "Liberal Democrats.p", "Other parties votes.p"]
 }

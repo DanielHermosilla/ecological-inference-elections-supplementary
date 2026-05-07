@@ -393,17 +393,97 @@
     [0.085614179321, 0.083466919407, 0.37769838142, 0.45322051985]
   ],
   "iterations": 194,
-  "time": 0.000898,
+  "logLik": -419.0521490408,
+  "time": 0.003001,
   "message": "Converged",
   "status": 0,
+  "mixture": 1,
+  "K": 1,
+  "H": 1,
+  "phi": 1,
+  "responsibilities": [
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1]
+  ],
+  "component_prob": [
+    [
+      [0.024400673539],
+      [0.52797496217],
+      [0.41145851165],
+      [0.036165852648]
+    ],
+    [
+      [0.26992201656],
+      [0.19165643309],
+      [0.53410473545],
+      [0.0043168148951]
+    ],
+    [
+      [0.027469547391],
+      [0.042659781523],
+      [0.81980175286],
+      [0.11006891822]
+    ],
+    [
+      [0.01019637085],
+      [0.71153570691],
+      [0.25209424411],
+      [0.026173678132]
+    ],
+    [
+      [4.1542418525e-05],
+      [0.32805047649],
+      [0.66844429189],
+      [0.0034636892022]
+    ],
+    [
+      [0.085614179321],
+      [0.083466919407],
+      [0.37769838142],
+      [0.45322051985]
+    ]
+  ],
   "miniter": 0,
-  "maxiter": 1000,
+  "maxiter": 10000,
   "maxtime": 3600,
   "param_threshold": 0.001,
   "ll_threshold": "-Inf",
   "initial_prob": "group_proportional",
   "adjust_prob_cond_method": "project_lp",
   "adjust_prob_cond_every": false,
+  "HET": 3.0694541627,
   "candidates_id": ["GOLDIE, Xavier Heath.c", "HENARE, Raymond Tau.c", "CARTER, Chris Joseph.c", "Other candidates votes.c"],
   "group_id": ["ACT New Zealand.p", "Green Party.p", "Labour Party.p", "National Party.p", "New Zealand First Party.p", "Other parties votes.p"]
 }

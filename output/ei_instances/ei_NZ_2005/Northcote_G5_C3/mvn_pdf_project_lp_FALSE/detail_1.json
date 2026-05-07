@@ -302,17 +302,81 @@
     [0.37684422209, 0.47882674112, 0.14432903678]
   ],
   "iterations": 88,
-  "time": 0.004459,
+  "logLik": -404.0475584636,
+  "time": 0.014185,
   "message": "Converged",
   "status": 0,
+  "mixture": 1,
+  "K": 1,
+  "H": 1,
+  "phi": 1,
+  "responsibilities": [
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1]
+  ],
+  "component_prob": [
+    [
+      [0.60222101611],
+      [0.37288787943],
+      [0.024891104455]
+    ],
+    [
+      [0.76582810868],
+      [0.09628821803],
+      [0.13788367329]
+    ],
+    [
+      [0.073563397375],
+      [0.89826173997],
+      [0.02817486265]
+    ],
+    [
+      [0.59978388761],
+      [0.16356131874],
+      [0.23665479365]
+    ],
+    [
+      [0.37684422209],
+      [0.47882674112],
+      [0.14432903678]
+    ]
+  ],
   "miniter": 0,
-  "maxiter": 1000,
+  "maxiter": 10000,
   "maxtime": 3600,
   "param_threshold": 0.001,
   "ll_threshold": "-Inf",
   "initial_prob": "group_proportional",
   "adjust_prob_cond_method": "project_lp",
   "adjust_prob_cond_every": false,
+  "HET": 3.3033513462,
   "candidates_id": ["HARTLEY, Margaret Ann.c", "COLEMAN, Jonathan David.c", "Other candidates votes.c"],
   "group_id": ["Green Party.p", "Labour Party.p", "National Party.p", "New Zealand First Party.p", "Other parties votes.p"]
 }

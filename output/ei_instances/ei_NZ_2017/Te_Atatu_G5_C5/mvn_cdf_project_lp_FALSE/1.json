@@ -70,5 +70,14 @@
   "MAE_Z": {},
   "MAE_V": 174.3786,
   "MAE_p": 0.0487,
-  "runtime": 0.274
+  "runtime": 0.39,
+  "LL": -755.7427,
+  "logLik": -755.7427,
+  "AIC": 1551.4855,
+  "BIC": 1593.3724,
+  "K": 1,
+  "H": 1,
+  "HET": {},
+  "selected_mixture": 1,
+  "selected_H": 1
 }

@@ -363,17 +363,94 @@
     [0.16146957815, 0.13808123488, 0.22376926945, 0.47667991752]
   ],
   "iterations": 175,
-  "time": 0.001065,
+  "logLik": -378.8178061446,
+  "time": 0.000739,
   "message": "Converged",
   "status": 0,
+  "mixture": 1,
+  "K": 1,
+  "H": 1,
+  "phi": 1,
+  "responsibilities": [
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1]
+  ],
+  "component_prob": [
+    [
+      [0.001066958435],
+      [0.14849628268],
+      [0.44069195182],
+      [0.40974480706]
+    ],
+    [
+      [0.5082675356],
+      [0.19597960555],
+      [0.29424761127],
+      [0.0015052475772]
+    ],
+    [
+      [0.062701752411],
+      [0.79968267664],
+      [0.071818813971],
+      [0.065796756978]
+    ],
+    [
+      [0.0094833149417],
+      [0.0506833239],
+      [0.9315555949],
+      [0.0082777662581]
+    ],
+    [
+      [0.037921370877],
+      [0.707765798],
+      [0.20504281441],
+      [0.049270016708]
+    ],
+    [
+      [0.16146957815],
+      [0.13808123488],
+      [0.22376926945],
+      [0.47667991752]
+    ]
+  ],
   "miniter": 0,
-  "maxiter": 1000,
+  "maxiter": 10000,
   "maxtime": 3600,
   "param_threshold": 0.001,
   "ll_threshold": "-Inf",
   "initial_prob": "group_proportional",
   "adjust_prob_cond_method": "project_lp",
   "adjust_prob_cond_every": false,
+  "HET": 2.5485402839,
   "candidates_id": ["SMITHSON, Anne-Elise.c", "HILLS, Richard Brian.c", "COLEMAN, Jonathan David.c", "Other candidates votes.c"],
   "group_id": ["Conservative.p", "Green Party.p", "Labour Party.p", "National Party.p", "New Zealand First Party.p", "Other parties votes.p"]
 }

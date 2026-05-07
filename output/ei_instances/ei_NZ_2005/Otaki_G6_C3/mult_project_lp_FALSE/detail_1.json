@@ -487,17 +487,101 @@
     [0.12991433681, 0.6048806015, 0.26520506169]
   ],
   "iterations": 110,
-  "time": 0.000692,
+  "logLik": -375.8370388787,
+  "time": 0.000642,
   "message": "Converged",
   "status": 0,
+  "mixture": 1,
+  "K": 1,
+  "H": 1,
+  "phi": 1,
+  "responsibilities": [
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1]
+  ],
+  "component_prob": [
+    [
+      [0.28821998741],
+      [0.204883593],
+      [0.50689641958]
+    ],
+    [
+      [0.088497031597],
+      [0.80307320478],
+      [0.10842976362]
+    ],
+    [
+      [0.89585243035],
+      [0.07699040591],
+      [0.027157163738]
+    ],
+    [
+      [0.21683995301],
+      [0.73662325638],
+      [0.046536790613]
+    ],
+    [
+      [0.70004655024],
+      [0.11271444068],
+      [0.18723900909]
+    ],
+    [
+      [0.12991433681],
+      [0.6048806015],
+      [0.26520506169]
+    ]
+  ],
   "miniter": 0,
-  "maxiter": 1000,
+  "maxiter": 10000,
   "maxtime": 3600,
   "param_threshold": 0.001,
   "ll_threshold": "-Inf",
   "initial_prob": "group_proportional",
   "adjust_prob_cond_method": "project_lp",
   "adjust_prob_cond_every": false,
+  "HET": 2.4207949772,
   "candidates_id": ["GUY, Allen Nathan.c", "HUGHES, Darren Colyn.c", "Other candidates votes.c"],
   "group_id": ["Green Party.p", "Labour Party.p", "National Party.p", "New Zealand First Party.p", "United Future New Zealand.p", "Other parties votes.p"]
 }

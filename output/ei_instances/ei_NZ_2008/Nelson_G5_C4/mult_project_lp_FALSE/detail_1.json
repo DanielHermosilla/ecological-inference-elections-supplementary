@@ -352,17 +352,91 @@
     [0.051133898089, 0.15789485137, 0.74002011764, 0.050951132906]
   ],
   "iterations": 130,
-  "time": 0.000597,
+  "logLik": -433.8297158641,
+  "time": 0.0006,
   "message": "Converged",
   "status": 0,
+  "mixture": 1,
+  "K": 1,
+  "H": 1,
+  "phi": 1,
+  "responsibilities": [
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1]
+  ],
+  "component_prob": [
+    [
+      [0.55007671999],
+      [0.40420654881],
+      [0.0072639991838],
+      [0.038452732019]
+    ],
+    [
+      [0.040451885555],
+      [0.69544933284],
+      [0.23295781918],
+      [0.031140962425]
+    ],
+    [
+      [0.0035526208021],
+      [0.014533595649],
+      [0.96874738263],
+      [0.013166400915]
+    ],
+    [
+      [0.0027657009337],
+      [0.48693479987],
+      [0.41541275688],
+      [0.094886742311]
+    ],
+    [
+      [0.051133898089],
+      [0.15789485137],
+      [0.74002011764],
+      [0.050951132906]
+    ]
+  ],
   "miniter": 0,
-  "maxiter": 1000,
+  "maxiter": 10000,
   "maxtime": 3600,
   "param_threshold": 0.001,
   "ll_threshold": "-Inf",
   "initial_prob": "group_proportional",
   "adjust_prob_cond_method": "project_lp",
   "adjust_prob_cond_every": false,
+  "HET": 3.109431401,
   "candidates_id": ["MELLOR, Diana Margaret.c", "STREET, Maryan.c", "SMITH, Nicolas Rex.c", "Other candidates votes.c"],
   "group_id": ["Green Party.p", "Labour Party.p", "National Party.p", "New Zealand First Party.p", "Other parties votes.p"]
 }

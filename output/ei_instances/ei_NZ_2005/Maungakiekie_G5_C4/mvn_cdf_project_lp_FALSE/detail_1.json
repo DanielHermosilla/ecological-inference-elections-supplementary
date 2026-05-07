@@ -311,17 +311,85 @@
   ],
   "iterations": 172,
   "logLik": -393.4436662588,
-  "time": 0.04941,
+  "time": 0.069023,
   "message": "Converged",
   "status": 0,
+  "mixture": 1,
+  "K": 1,
+  "H": 1,
+  "phi": 1,
+  "responsibilities": [
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1]
+  ],
+  "component_prob": [
+    [
+      [2.3762420904e-05],
+      [0.28171062403],
+      [0.5065216385],
+      [0.21174397504]
+    ],
+    [
+      [0.031089740565],
+      [0.0017547690912],
+      [0.85859846881],
+      [0.10855702153]
+    ],
+    [
+      [0.00028824967361],
+      [0.88794478719],
+      [0.045510198942],
+      [0.066256764194]
+    ],
+    [
+      [0.31009145664],
+      [0.0066215821626],
+      [0.49773920506],
+      [0.18554775614]
+    ],
+    [
+      [0.038978758966],
+      [0.0077976568339],
+      [0.4822341662],
+      [0.470989418]
+    ]
+  ],
   "miniter": 0,
-  "maxiter": 1000,
+  "maxiter": 10000,
   "maxtime": 3600,
   "param_threshold": 0.001,
   "ll_threshold": "-Inf",
   "initial_prob": "group_proportional",
   "adjust_prob_cond_method": "project_lp",
   "adjust_prob_cond_every": false,
+  "HET": 2.4826239052,
   "candidates_id": ["WILLIAMS, Joseph.c", "GOLDSMITH, Paul Jonathan.c", "GOSCHE, Mark James.c", "Other candidates votes.c"],
   "group_id": ["Green Party.p", "Labour Party.p", "National Party.p", "New Zealand First Party.p", "Other parties votes.p"]
 }

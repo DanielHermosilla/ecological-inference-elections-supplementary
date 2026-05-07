@@ -343,17 +343,90 @@
     [0.027506404604, 0.15753229951, 0.63716270667, 0.17779858921]
   ],
   "iterations": 133,
-  "time": 0.000655,
+  "logLik": -389.5490376595,
+  "time": 0.000522,
   "message": "Converged",
   "status": 0,
+  "mixture": 1,
+  "K": 1,
+  "H": 1,
+  "phi": 1,
+  "responsibilities": [
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1]
+  ],
+  "component_prob": [
+    [
+      [0.50704655226],
+      [0.44780455403],
+      [0.040816806616],
+      [0.0043320870908]
+    ],
+    [
+      [0.030242055616],
+      [0.79324985402],
+      [0.095818446454],
+      [0.080689643916]
+    ],
+    [
+      [0.0042667570284],
+      [0.01492804833],
+      [0.94660657513],
+      [0.034198619514]
+    ],
+    [
+      [0.01042676481],
+      [0.31156708079],
+      [0.36545212476],
+      [0.31255402964]
+    ],
+    [
+      [0.027506404604],
+      [0.15753229951],
+      [0.63716270667],
+      [0.17779858921]
+    ]
+  ],
   "miniter": 0,
-  "maxiter": 1000,
+  "maxiter": 10000,
   "maxtime": 3600,
   "param_threshold": 0.001,
   "ll_threshold": "-Inf",
   "initial_prob": "group_proportional",
   "adjust_prob_cond_method": "project_lp",
   "adjust_prob_cond_every": false,
+  "HET": 2.4136264099,
   "candidates_id": ["BARLOW, Aaryn.c", "STREET, Maryan.c", "SMITH, Nicolas Rex.c", "Other candidates votes.c"],
   "group_id": ["Green Party.p", "Labour Party.p", "National Party.p", "New Zealand First Party.p", "Other parties votes.p"]
 }

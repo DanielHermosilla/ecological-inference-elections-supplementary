@@ -403,17 +403,98 @@
     [0.0026786058963, 0.15442316075, 0.57497875082, 0.26791948254]
   ],
   "iterations": 139,
-  "time": 0.014535,
+  "logLik": -441.5226677432,
+  "time": 0.027908,
   "message": "Converged",
   "status": 0,
+  "mixture": 1,
+  "K": 1,
+  "H": 1,
+  "phi": 1,
+  "responsibilities": [
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1],
+    [1]
+  ],
+  "component_prob": [
+    [
+      [0.0093683321608],
+      [0.22681149994],
+      [0.34360749909],
+      [0.42021266881]
+    ],
+    [
+      [0.011657401997],
+      [0.058656431384],
+      [0.82282145965],
+      [0.10686470697]
+    ],
+    [
+      [0.0054242524906],
+      [0.57284187824],
+      [0.30646299654],
+      [0.11527087273]
+    ],
+    [
+      [0.4217203051],
+      [0.32830263508],
+      [0.23131843668],
+      [0.018658623141]
+    ],
+    [
+      [0.00093658654955],
+      [0.24324444488],
+      [0.3694011709],
+      [0.38641779768]
+    ],
+    [
+      [0.0026786058963],
+      [0.15442316075],
+      [0.57497875082],
+      [0.26791948254]
+    ]
+  ],
   "miniter": 0,
-  "maxiter": 1000,
+  "maxiter": 10000,
   "maxtime": 3600,
   "param_threshold": 0.001,
   "ll_threshold": "-Inf",
   "initial_prob": "group_proportional",
   "adjust_prob_cond_method": "project_lp",
   "adjust_prob_cond_every": false,
+  "HET": 2.5797436146,
   "candidates_id": ["DAVIS, Moetu Tipene.c", "HENARE, Raymond Tau.c", "CARTER, Christopher Joseph.c", "Other candidates votes.c"],
   "group_id": ["Green Party.p", "Labour Party.p", "National Party.p", "New Zealand First Party.p", "United Future New Zealand.p", "Other parties votes.p"]
 }
